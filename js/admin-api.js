@@ -2,7 +2,7 @@
    BLUVIA Admin — API Integration
    ======================================== */
 
-const API_BASE = 'http://43.153.207.36:8002';
+const API_BASE = 'https://43.153.207.36';
 
 // ── Helpers ──
 async function api(endpoint) {
