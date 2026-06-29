@@ -2,7 +2,7 @@
    BLUVIA Admin — API Integration
    ======================================== */
 
-const API_BASE = 'https://43.153.207.36';
+const API_BASE = '';  // Same origin — nginx proxies /api/ to backend
 
 // ── Helpers ──
 async function api(endpoint) {
