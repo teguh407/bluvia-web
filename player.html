@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Player — BLUVIA</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/home.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%233b82f6'/><polygon points='12,8 26,16 12,24' fill='white'/></svg>">
+  <style>
+    /* ── Player Page Styles ── */
+    body { background: var(--bg-primary); }
+
+    .player-wrapper {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: var(--space-xl);
+    }
+
+    /* Back Button */
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: 0.5rem 1rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      font-size: var(--fs-sm);
+      font-weight: 500;
+      margin-bottom: var(--space-xl);
+      transition: all 0.2s var(--ease);
+      cursor: pointer;
+    }
+    .back-btn:hover {
+      color: var(--text-primary);
+      border-color: var(--border-light);
+      background: var(--bg-card-hover);
+    }
+    .back-btn svg { width: 16px; height: 16px; }
+
+    /* Video Container - 16:9 Responsive */
+    .video-container {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%; /* 16:9 */
+      background: #000;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-elevated);
+    }
+    .video-container video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #000;
+    }
+
+    /* Video Loading State */
+    .video-loading {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+      color: var(--text-secondary);
+      gap: var(--space-md);
+    }
+    .video-loading.hidden { display: none; }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid var(--border-light);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Episode Info Bar */
+    .episode-info-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-lg) 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: var(--space-xl);
+      flex-wrap: wrap;
+      gap: var(--space-md);
+    }
+    .episode-info-left {
+      flex: 1;
+      min-width: 200px;
+    }
+    .episode-info-left h1 {
+      font-size: var(--fs-xl);
+      font-weight: 700;
+      margin-bottom: var(--space-xs);
+    }
+    .episode-info-left .ep-name {
+      font-size: var(--fs-sm);
+      color: var(--text-secondary);
+    }
+    .episode-nav {
+      display: flex;
+      gap: var(--space-sm);
+    }
+    .ep-nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: 0.5rem 1rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      font-size: var(--fs-sm);
+      font-weight: 500;
+      transition: all 0.2s var(--ease);
+      cursor: pointer;
+    }
+    .ep-nav-btn:hover:not(:disabled) {
+      color: var(--text-primary);
+      border-color: var(--accent);
+      background: rgba(59,130,246,0.1);
+    }
+    .ep-nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .ep-nav-btn svg { width: 14px; height: 14px; }
+
+    /* Episode List Section */
+    .episodes-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+    }
+    .episodes-section .section-header {
+      margin-bottom: var(--space-lg);
+    }
+
+    /* Episode Grid */
+    .episodes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: var(--space-md);
+    }
+
+    /* Episode Card */
+    .ep-card {
+      background: var(--bg-secondary);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--space-md);
+      cursor: pointer;
+      transition: all 0.2s var(--ease);
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+    }
+    .ep-card:hover {
+      border-color: var(--border-light);
+      background: var(--bg-card-hover);
+      transform: translateY(-2px);
+    }
+    .ep-card.active {
+      border-color: var(--accent);
+      background: rgba(59,130,246,0.1);
+    }
+    .ep-card-num {
+      width: 36px; height: 36px;
+      background: var(--bg-card);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: var(--fs-sm);
+      flex-shrink: 0;
+      color: var(--text-secondary);
+    }
+    .ep-card.active .ep-card-num {
+      background: var(--accent);
+      color: #fff;
+    }
+    .ep-card-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .ep-card-title {
+      font-size: var(--fs-sm);
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ep-card-meta {
+      font-size: var(--fs-xs);
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Playing indicator */
+    .playing-indicator {
+      display: none;
+      width: 12px; height: 12px;
+      flex-shrink: 0;
+    }
+    .ep-card.active .playing-indicator {
+      display: block;
+    }
+    .playing-indicator .bar {
+      width: 3px; height: 12px;
+      background: var(--accent);
+      border-radius: 2px;
+      display: inline-block;
+      margin: 0 1px;
+      animation: equalizer 0.6s ease-in-out infinite alternate;
+    }
+    .playing-indicator .bar:nth-child(2) { animation-delay: 0.2s; }
+    .playing-indicator .bar:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes equalizer {
+      0% { height: 4px; }
+      100% { height: 12px; }
+    }
+
+    /* Error / No Data */
+    .player-error {
+      text-align: center;
+      padding: var(--space-2xl);
+      color: var(--text-secondary);
+    }
+    .player-error h2 {
+      color: var(--text-primary);
+      margin-bottom: var(--space-md);
+    }
+    .player-error p {
+      margin-bottom: var(--space-lg);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .player-wrapper { padding: var(--space-md); }
+      .episode-info-bar { flex-direction: column; align-items: flex-start; }
+      .episodes-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+      .episode-info-left h1 { font-size: var(--fs-lg); }
+    }
+  </style>
+</head>
+<body data-page="player">
+
+  <div class="player-wrapper">
+
+    <!-- Back Button -->
+    <a href="#" class="back-btn" id="backBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      Kembali ke Drama
+    </a>
+
+    <!-- Video Player -->
+    <div class="video-container" id="videoContainer">
+      <div class="video-loading" id="videoLoading">
+        <div class="spinner"></div>
+        <span>Memuat video...</span>
+      </div>
+      <video id="videoPlayer" controls preload="metadata" playsinline>
+        Browser Anda tidak mendukung pemutar video.
+      </video>
+    </div>
+
+    <!-- Episode Info & Navigation -->
+    <div class="episode-info-bar">
+      <div class="episode-info-left">
+        <h1 id="dramaTitle">Memuat drama...</h1>
+        <div class="ep-name" id="episodeName">Memuat episode...</div>
+      </div>
+      <div class="episode-nav">
+        <button class="ep-nav-btn" id="prevBtn" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          Episode Sebelumnya
+        </button>
+        <button class="ep-nav-btn" id="nextBtn" disabled>
+          Episode Selanjutnya
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Episode List -->
+    <div class="episodes-section">
+      <div class="section-header">
+        <h2 class="section-title">📋 Daftar Episode</h2>
+        <span id="episodeCount" class="section-link" style="color:var(--text-muted);"></span>
+      </div>
+      <div class="episodes-grid" id="episodesGrid">
+        <!-- Episodes will be loaded here -->
+      </div>
+    </div>
+
+    <!-- Error State (hidden by default) -->
+    <div class="player-error" id="playerError" style="display:none;">
+      <h2>Terjadi Kesalahan</h2>
+      <p id="errorMessage">Tidak dapat memuat data drama atau episode.</p>
+      <a href="index.html" class="btn btn-primary">Kembali ke Home</a>
+    </div>
+
+  </div>
+
+  <script src="js/site-api.js"></script>
+  <script>
+    // ── Player Page Logic ──
+    (function() {
+      const params = new URLSearchParams(window.location.search);
+      const dramaId = params.get('drama');
+      const currentEp = parseInt(params.get('ep')) || 1;
+
+      let dramaInfo = null;
+      let episodes = [];
+
+      const videoPlayer = document.getElementById('videoPlayer');
+      const videoLoading = document.getElementById('videoLoading');
+      const dramaTitle = document.getElementById('dramaTitle');
+      const episodeName = document.getElementById('episodeName');
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const episodesGrid = document.getElementById('episodesGrid');
+      const episodeCount = document.getElementById('episodeCount');
+      const backBtn = document.getElementById('backBtn');
+      const playerError = document.getElementById('playerError');
+      const errorMessage = document.getElementById('errorMessage');
+      const videoContainer = document.getElementById('videoContainer');
+
+      // Redirect if no drama param
+      if (!dramaId) {
+        showError('Parameter drama tidak ditemukan.');
+        return;
+      }
+
+      // Set back button link
+      backBtn.href = `drama.html?id=${encodeURIComponent(dramaId)}`;
+
+      // Fetch data
+      async function init() {
+        try {
+          const [infoData, epsData] = await Promise.all([
+            api(`/api/drama/${encodeURIComponent(dramaId)}/info`),
+            api(`/api/drama/${encodeURIComponent(dramaId)}/episodes`)
+          ]);
+
+          if (!infoData && !epsData) {
+            showError('Tidak dapat memuat data. Silakan coba lagi nanti.');
+            return;
+          }
+
+          dramaInfo = infoData;
+          episodes = (epsData && epsData.episodes) ? epsData.episodes : (Array.isArray(epsData) ? epsData : []);
+
+          // Sort episodes by number
+          episodes.sort((a, b) => (a.number || a.ep || 0) - (b.number || b.ep || 0));
+
+          // Update page title and info
+          if (dramaInfo) {
+            document.title = `${dramaInfo.title || cleanTitle(dramaId)} — BLUVIA`;
+            dramaTitle.textContent = dramaInfo.title || cleanTitle(dramaId);
+          } else {
+            document.title = `${cleanTitle(dramaId)} — BLUVIA`;
+            dramaTitle.textContent = cleanTitle(dramaId);
+          }
+
+          episodeCount.textContent = `${episodes.length} episode`;
+
+          // Load episode
+          loadEpisode(currentEp);
+          renderEpisodeList();
+          updateNavButtons();
+
+        } catch (err) {
+          console.error('Init error:', err);
+          showError('Terjadi kesalahan saat memuat data.');
+        }
+      }
+
+      function loadEpisode(epNum) {
+        const ep = episodes.find(e => (e.number || e.ep) === epNum);
+        if (!ep) {
+          episodeName.textContent = `Episode ${epNum}`;
+          showVideoLoading(false);
+          return;
+        }
+
+        const epTitle = ep.title || ep.name || `Episode ${epNum}`;
+        episodeName.textContent = epTitle;
+        document.title = `${epTitle} — ${dramaInfo ? dramaInfo.title : cleanTitle(dramaId)} — BLUVIA`;
+
+        const streamUrl = ep.streaming_url || ep.url || ep.video_url || '';
+        if (streamUrl) {
+          videoPlayer.src = streamUrl;
+          videoPlayer.load();
+          showVideoLoading(true);
+
+          videoPlayer.oncanplay = () => showVideoLoading(false);
+          videoPlayer.onerror = () => {
+            showVideoLoading(false);
+            console.error('Video error:', videoPlayer.error);
+          };
+        } else {
+          showVideoLoading(false);
+        }
+
+        // Update active state in episode list
+        updateActiveEpisode(epNum);
+        updateNavButtons();
+
+        // Update URL without reload
+        const url = new URL(window.location);
+        url.searchParams.set('ep', epNum);
+        window.history.replaceState({}, '', url);
+      }
+
+      function updateNavButtons() {
+        const idx = episodes.findIndex(e => (e.number || e.ep) === currentEp);
+        prevBtn.disabled = idx <= 0;
+        nextBtn.disabled = idx >= episodes.length - 1 || episodes.length === 0;
+
+        if (episodes.length === 0) {
+          prevBtn.disabled = true;
+          nextBtn.disabled = true;
+        }
+      }
+
+      function renderEpisodeList() {
+        episodesGrid.innerHTML = '';
+        if (episodes.length === 0) {
+          episodesGrid.innerHTML = '<p style="color:var(--text-muted);padding:var(--space-lg);">Tidak ada episode tersedia.</p>';
+          return;
+        }
+
+        episodes.forEach((ep, i) => {
+          const epNum = ep.number || ep.ep || (i + 1);
+          const epTitle = ep.title || ep.name || `Episode ${epNum}`;
+          const isActive = epNum === currentEp;
+
+          const card = document.createElement('div');
+          card.className = `ep-card${isActive ? ' active' : ''}`;
+          card.dataset.ep = epNum;
+          card.innerHTML = `
+            <div class="ep-card-num">${epNum}</div>
+            <div class="ep-card-info">
+              <div class="ep-card-title" title="${epTitle}">${epTitle}</div>
+              <div class="ep-card-meta">${ep.duration || ''}</div>
+            </div>
+            <div class="playing-indicator">
+              <span class="bar"></span>
+              <span class="bar"></span>
+              <span class="bar"></span>
+            </div>
+          `;
+          card.addEventListener('click', () => {
+            currentEpValue(epNum);
+          });
+          episodesGrid.appendChild(card);
+        });
+      }
+
+      function updateActiveEpisode(epNum) {
+        document.querySelectorAll('.ep-card').forEach(card => {
+          card.classList.toggle('active', parseInt(card.dataset.ep) === epNum);
+        });
+      }
+
+      function currentEpValue(epNum) {
+        currentEp = epNum;
+        loadEpisode(epNum);
+        // Scroll to video
+        videoContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      // Navigation
+      prevBtn.addEventListener('click', () => {
+        const idx = episodes.findIndex(e => (e.number || e.ep) === currentEp);
+        if (idx > 0) {
+          currentEpValue(episodes[idx - 1].number || episodes[idx - 1].ep);
+        }
+      });
+
+      nextBtn.addEventListener('click', () => {
+        const idx = episodes.findIndex(e => (e.number || e.ep) === currentEp);
+        if (idx < episodes.length - 1) {
+          currentEpValue(episodes[idx + 1].number || episodes[idx + 1].ep);
+        }
+      });
+
+      function showVideoLoading(show) {
+        videoLoading.classList.toggle('hidden', !show);
+      }
+
+      function showError(msg) {
+        playerError.style.display = 'block';
+        errorMessage.textContent = msg;
+        videoContainer.style.display = 'none';
+        document.querySelector('.episode-info-bar').style.display = 'none';
+        document.querySelector('.episodes-section').style.display = 'none';
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT') return;
+
+        switch (e.key) {
+          case 'ArrowLeft':
+            videoPlayer.currentTime = Math.max(0, videoPlayer.currentTime - 10);
+            break;
+          case 'ArrowRight':
+            videoPlayer.currentTime = Math.min(videoPlayer.duration, videoPlayer.currentTime + 10);
+            break;
+          case ' ':
+            e.preventDefault();
+            videoPlayer.paused ? videoPlayer.play() : videoPlayer.pause();
+            break;
+          case 'f':
+          case 'F':
+            if (videoPlayer.requestFullscreen) {
+              videoPlayer.requestFullscreen();
+            }
+            break;
+        }
+      });
+
+      // Start
+      init();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drama — BLUVIA</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/home.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%233b82f6'/><polygon points='12,8 26,16 12,24' fill='white'/></svg>">
+  <style>
+    /* ── Drama Detail Page ── */
+    .drama-hero {
+      position: relative;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      margin-bottom: var(--space-2xl);
+      min-height: 420px;
+      display: flex;
+    }
+    .drama-hero-bg {
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(8,12,24,0.92) 0%, rgba(8,12,24,0.5) 100%),
+                  var(--bg-secondary) center/cover no-repeat;
+    }
+    .drama-hero-inner {
+      position: relative; z-index: 1;
+      display: flex; gap: var(--space-2xl);
+      padding: var(--space-2xl);
+      width: 100%;
+    }
+    .drama-poster-wrap {
+      flex-shrink: 0;
+      width: 260px;
+    }
+    .drama-poster-img {
+      width: 100%;
+      aspect-ratio: 2/3;
+      object-fit: cover;
+      border-radius: var(--radius-lg);
+      background: var(--bg-secondary);
+      box-shadow: var(--shadow-elevated);
+    }
+    .drama-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
+    }
+    .drama-info .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-lg);
+      font-size: var(--fs-sm);
+      color: var(--text-secondary);
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: color 0.2s;
+      padding: 0;
+    }
+    .drama-info .back-btn:hover { color: var(--text-primary); }
+    .drama-title {
+      font-size: var(--fs-3xl);
+      font-weight: 800;
+      margin-bottom: var(--space-sm);
+      line-height: 1.2;
+    }
+    .drama-meta {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      margin-bottom: var(--space-lg);
+      flex-wrap: wrap;
+    }
+    .drama-meta .meta-item {
+      font-size: var(--fs-sm);
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .drama-meta .meta-sep {
+      width: 4px; height: 4px;
+      border-radius: var(--radius-full);
+      background: var(--text-muted);
+    }
+    .drama-genres {
+      display: flex;
+      gap: var(--space-sm);
+      flex-wrap: wrap;
+      margin-bottom: var(--space-lg);
+    }
+    .drama-genres .genre-tag {
+      padding: 0.25rem 0.75rem;
+      background: rgba(59,130,246,0.12);
+      border: 1px solid rgba(59,130,246,0.2);
+      border-radius: var(--radius-full);
+      font-size: var(--fs-xs);
+      font-weight: 600;
+      color: var(--text-accent);
+    }
+    .drama-synopsis {
+      font-size: var(--fs-sm);
+      color: var(--text-secondary);
+      line-height: 1.8;
+      margin-bottom: var(--space-xl);
+      max-width: 600px;
+    }
+    .drama-actions {
+      display: flex;
+      gap: var(--space-md);
+    }
+
+    /* Episodes Section */
+    .episodes-section {
+      margin-bottom: var(--space-2xl);
+    }
+    .episode-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: var(--space-md);
+    }
+    .ep-card {
+      display: flex;
+      align-items: center;
+      gap: var(--space-md);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-md);
+      cursor: pointer;
+      transition: all 0.25s var(--ease);
+      text-decoration: none;
+      color: inherit;
+    }
+    .ep-card:hover {
+      border-color: var(--accent);
+      background: var(--bg-card-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(59,130,246,0.15);
+    }
+    .ep-card .ep-num {
+      width: 44px; height: 44px;
+      border-radius: var(--radius-md);
+      background: var(--accent-gradient);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800;
+      font-size: var(--fs-md);
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .ep-card .ep-details { min-width: 0; }
+    .ep-card .ep-name {
+      font-size: var(--fs-sm);
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ep-card .ep-label {
+      font-size: var(--fs-xs);
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    /* Similar Dramas */
+    .similar-section {
+      margin-bottom: var(--space-2xl);
+    }
+
+    /* Loading & Error States */
+    .loading-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+      gap: var(--space-md);
+    }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid var(--border-light);
+      border-top-color: var(--accent);
+      border-radius: var(--radius-full);
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-state p {
+      font-size: var(--fs-sm);
+      color: var(--text-secondary);
+    }
+    .error-state {
+      text-align: center;
+      padding: var(--space-2xl);
+      color: var(--text-secondary);
+    }
+    .error-state h3 {
+      font-size: var(--fs-xl);
+      color: var(--text-primary);
+      margin-bottom: var(--space-sm);
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .drama-hero-inner {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: var(--space-lg);
+      }
+      .drama-poster-wrap { width: 200px; }
+      .drama-info { align-items: center; }
+      .drama-meta { justify-content: center; }
+      .drama-genres { justify-content: center; }
+      .drama-synopsis { text-align: center; max-width: 100%; }
+      .drama-actions { justify-content: center; }
+      .drama-info .back-btn { align-self: flex-start; }
+    }
+    @media (max-width: 768px) {
+      .drama-hero { min-height: auto; }
+      .drama-title { font-size: var(--fs-xl); }
+      .drama-poster-wrap { width: 160px; }
+      .episode-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+      .drama-poster-wrap { width: 140px; }
+    }
+  </style>
+</head>
+<body data-page="drama">
+
+  <!-- ═══════════════ SIDEBAR ═══════════════ -->
+  <aside class="sidebar">
+    <a href="home.html" class="logo">
+      <div class="logo-icon">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><polygon points="4,2 14,8 4,14" fill="white"/></svg>
+      </div>
+      <span class="logo-text">BLUVIA</span>
+    </a>
+
+    <div class="sidebar-profile">
+      <div class="avatar" style="background:linear-gradient(135deg,#60a5fa,#3b82f6)">
+        <img src="https://i.pravatar.cc/80?img=12" alt="">
+      </div>
+      <div class="profile-info">
+        <div class="profile-greeting">Halo, Teguh 👋</div>
+        <div class="profile-sub">Mau nonton apa hari ini?</div>
+      </div>
+    </div>
+
+    <div class="sidebar-upgrade">
+      <div class="sidebar-upgrade-left">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <div>
+          Upgrade ke Premium
+          <span class="sidebar-upgrade-sub">Nonton semua drama tanpa iklan</span>
+        </div>
+      </div>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+
+    <div class="sidebar-menu-label">Menu Utama</div>
+    <nav class="sidebar-menu">
+      <a href="home.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Home
+      </a>
+      <a href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Ongoing
+      </a>
+      <a href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Terbaru
+      </a>
+      <a href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        Daftar Suka
+      </a>
+      <a href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Kategori
+      </a>
+    </nav>
+
+    <div class="sidebar-menu-label">Akun & Lainnya</div>
+    <nav class="sidebar-menu">
+      <a href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Riwayat Tonton
+      </a>
+      <a href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Downloads
+      </a>
+      <a href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        Daftar Saya
+      </a>
+      <a href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Pengaturan
+      </a>
+    </nav>
+
+    <div class="sidebar-toggle" style="padding: 0.55rem 0.5rem;">
+      <span style="display:flex;align-items:center;gap:0.75rem;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        Dark Mode
+      </span>
+      <div class="toggle-switch" onclick="this.classList.toggle('off')"></div>
+    </div>
+
+    <div class="sidebar-bottom">
+      <div class="sidebar-download">
+        <p>Download Aplikasi BLUVIA</p>
+        <div class="sub">Nonton lebih nyaman di aplikasi</div>
+        <div class="store-badges">
+          <a href="#" class="store-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 20.5V3.5c0-.94.63-1.6 1.36-1.6.3 0 .58.12.82.34l13.96 8.26c.5.3.5.98 0 1.28L5.18 20.16c-.24.22-.52.34-.82.34C3.63 22.1 3 21.44 3 20.5z"/></svg>
+            Google Play
+          </a>
+          <a href="#" class="store-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+            App Store
+          </a>
+        </div>
+      </div>
+      <p style="font-size:var(--fs-xs);color:var(--text-muted);margin-top:var(--space-lg);padding-left:var(--space-sm);">© 2025 BLUVIA. All rights reserved.</p>
+    </div>
+  </aside>
+
+  <!-- ═══════════════ MAIN ═══════════════ -->
+  <div class="home-main">
+    <!-- Top Nav -->
+    <header class="top-nav">
+      <div class="top-nav-inner">
+        <div class="top-nav-links">
+          <a href="home.html">Home</a>
+          <a href="#">Ongoing</a>
+          <a href="#">Terbaru</a>
+          <a href="#">Daftar Suka</a>
+          <a href="#">Kategori</a>
+        </div>
+        <div class="top-nav-right">
+          <div class="search-bar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" placeholder="Cari drama favoritmu...">
+          </div>
+          <button class="notification-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="notif-dot"></span>
+          </button>
+          <div class="user-menu">
+            <div class="avatar" style="width:32px;height:32px;">
+              <img src="https://i.pravatar.cc/64?img=12" alt="">
+            </div>
+            <span>Teguh</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <div class="home-content">
+      <!-- Loading State -->
+      <div id="drama-loading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Memuat drama...</p>
+      </div>
+
+      <!-- Error State -->
+      <div id="drama-error" class="error-state" style="display:none;">
+        <h3>Drama tidak ditemukan</h3>
+        <p id="error-message">Terjadi kesalahan saat memuat data.</p>
+        <a href="home.html" class="btn btn-primary" style="margin-top:var(--space-lg);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+          Kembali ke Home
+        </a>
+      </div>
+
+      <!-- Drama Detail (hidden until loaded) -->
+      <div id="drama-content" style="display:none;">
+
+        <!-- Hero Section -->
+        <div class="drama-hero">
+          <div class="drama-hero-bg" id="drama-hero-bg"></div>
+          <div class="drama-hero-inner">
+            <div class="drama-poster-wrap">
+              <img class="drama-poster-img" id="drama-poster" src="" alt="" onerror="this.style.background='var(--bg-secondary)'">
+            </div>
+            <div class="drama-info">
+              <button class="back-btn" onclick="history.back()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+                Kembali
+              </button>
+              <h1 class="drama-title" id="drama-title">—</h1>
+              <div class="drama-meta" id="drama-meta">
+                <!-- Filled by JS -->
+              </div>
+              <div class="drama-genres" id="drama-genres">
+                <!-- Filled by JS -->
+              </div>
+              <p class="drama-synopsis" id="drama-synopsis"></p>
+              <div class="drama-actions">
+                <a href="#" id="btn-watch" class="btn btn-primary btn-lg">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><polygon points="4,2 14,8 4,14" fill="white"/></svg>
+                  Tonton Sekarang
+                </a>
+                <button class="btn btn-outline btn-lg" onclick="addToMyList()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  My List
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Episodes -->
+        <section class="episodes-section">
+          <div class="section-header">
+            <h2 class="section-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/><line x1="17" y1="17" x2="22" y2="17"/></svg>
+              Daftar Episode
+            </h2>
+            <span class="section-link" id="episode-count">0 Episode</span>
+          </div>
+          <div class="episode-grid" id="episode-grid">
+            <!-- Filled by JS -->
+          </div>
+        </section>
+
+        <!-- Similar Dramas -->
+        <section class="similar-section" id="similar-section" style="display:none;">
+          <div class="section-header">
+            <h2 class="section-title">Drama Serupa</h2>
+            <a href="home.html" class="section-link">Lihat Semua <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a>
+          </div>
+          <div class="h-scroll" id="similar-grid">
+            <!-- Filled by JS -->
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="js/site-api.js"></script>
+  <script>
+  (function() {
+    /* ── Parse Drama ID from URL ── */
+    const params = new URLSearchParams(window.location.search);
+    const dramaId = params.get('id');
+
+    if (!dramaId) {
+      showError('Parameter "id" tidak ditemukan di URL.');
+      return;
+    }
+
+    /* ── DOM refs ── */
+    const elLoading   = document.getElementById('drama-loading');
+    const elError     = document.getElementById('drama-error');
+    const elContent   = document.getElementById('drama-content');
+    const elHeroBg    = document.getElementById('drama-hero-bg');
+    const elPoster    = document.getElementById('drama-poster');
+    const elTitle     = document.getElementById('drama-title');
+    const elMeta      = document.getElementById('drama-meta');
+    const elGenres    = document.getElementById('drama-genres');
+    const elSynopsis  = document.getElementById('drama-synopsis');
+    const elEpGrid    = document.getElementById('episode-grid');
+    const elEpCount   = document.getElementById('episode-count');
+    const elBtnWatch  = document.getElementById('btn-watch');
+    const elSimSection= document.getElementById('similar-section');
+    const elSimGrid   = document.getElementById('similar-grid');
+
+    /* ── Helpers ── */
+    function showError(msg) {
+      elLoading.style.display = 'none';
+      elError.style.display = 'block';
+      elContent.style.display = 'none';
+      document.getElementById('error-message').textContent = msg;
+    }
+
+    function showContent() {
+      elLoading.style.display = 'none';
+      elError.style.display = 'none';
+      elContent.style.display = 'block';
+    }
+
+    function dramaPosterUrl(id) {
+      return API_BASE + '/api/image/' + encodeURIComponent(id) + '/poster.jpg';
+    }
+
+    /* ── Render Drama Info ── */
+    function renderInfo(info) {
+      document.title = (info.title || 'Drama') + ' — BLUVIA';
+
+      // Poster
+      elPoster.src = dramaPosterUrl(info.drama_id);
+      elPoster.alt = info.title || '';
+
+      // Hero background (use poster as blurred BG)
+      elHeroBg.style.backgroundImage =
+        'linear-gradient(135deg, rgba(8,12,24,0.92) 0%, rgba(8,12,24,0.5) 100%), url(' + dramaPosterUrl(info.drama_id) + ')';
+      elHeroBg.style.backgroundSize = 'cover';
+      elHeroBg.style.backgroundPosition = 'center';
+
+      // Title
+      elTitle.textContent = info.title || info.drama_id;
+
+      // Meta (year, rating)
+      let metaHtml = '';
+      if (info.year) {
+        metaHtml += '<span class="meta-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> ' + info.year + '</span>';
+        metaHtml += '<span class="meta-sep"></span>';
+      }
+      if (info.rating) {
+        metaHtml += '<span class="meta-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="var(--warning)" stroke="var(--warning)" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> ' + info.rating + '</span>';
+        metaHtml += '<span class="meta-sep"></span>';
+      }
+      // Drama type badge
+      const parts = info.drama_id ? info.drama_id.split('/') : [];
+      if (parts.length > 0) {
+        const typeLabel = parts[0].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        metaHtml += '<span class="badge badge-ongoing">' + typeLabel + '</span>';
+      }
+      elMeta.innerHTML = metaHtml;
+
+      // Genres
+      const genres = info.genres || [];
+      if (genres.length > 0) {
+        elGenres.innerHTML = genres.map(g =>
+          '<span class="genre-tag">' + (typeof g === 'string' ? g : g.name || g) + '</span>'
+        ).join('');
+      } else {
+        elGenres.innerHTML = '';
+      }
+
+      // Synopsis
+      elSynopsis.textContent = info.synopsis || 'Sinopsis belum tersedia.';
+
+      // Watch button → first episode
+      elBtnWatch.href = 'player.html?drama=' + encodeURIComponent(info.drama_id) + '&ep=1';
+    }
+
+    /* ── Render Episodes ── */
+    function renderEpisodes(episodes) {
+      const sorted = (episodes || []).slice().sort((a, b) => (a.episode_number || 0) - (b.episode_number || 0));
+      elEpCount.textContent = sorted.length + ' Episode';
+
+      if (sorted.length === 0) {
+        elEpGrid.innerHTML = '<p style="color:var(--text-secondary);font-size:var(--fs-sm);">Belum ada episode tersedia.</p>';
+        return;
+      }
+
+      elEpGrid.innerHTML = sorted.map(ep => {
+        const num = ep.episode_number || '?';
+        const href = 'player.html?drama=' + encodeURIComponent(dramaId) + '&ep=' + encodeURIComponent(num);
+        const premiumBadge = ep.is_premium
+          ? '<span class="badge badge-premium" style="font-size:0.6rem;padding:0.15rem 0.45rem;">PREMIUM</span>'
+          : '';
+        return '<a class="ep-card" href="' + href + '">' +
+          '<div class="ep-num">' + num + '</div>' +
+          '<div class="ep-details">' +
+            '<div class="ep-name">' + (ep.name || 'Episode ' + num) + '</div>' +
+            '<div class="ep-label">Episode ' + num + ' ' + premiumBadge + '</div>' +
+          '</div>' +
+        '</a>';
+      }).join('');
+    }
+
+    /* ── Render Similar Dramas ── */
+    function renderSimilar(dramas) {
+      if (!dramas || dramas.length === 0) {
+        elSimSection.style.display = 'none';
+        return;
+      }
+      elSimSection.style.display = 'block';
+      elSimGrid.innerHTML = dramas.map(d => {
+        const title = d.title || cleanTitle(d.id || '');
+        const id = d.drama_id || d.id || d.slug || '';
+        const posterSrc = d.poster_url
+          ? (d.poster_url.startsWith('/') ? API_BASE + d.poster_url : d.poster_url)
+          : dramaPosterUrl(id);
+        return '<div class="poster-card" style="min-width:180px;" onclick="location.href=\'drama.html?id=' + encodeURIComponent(id) + '\'">' +
+          '<img class="poster-img" src="' + posterSrc + '" alt="' + title + '" onerror="this.style.background=\'var(--bg-secondary)\'">' +
+          '<div class="poster-info">' +
+            '<div class="poster-title">' + title + '</div>' +
+            '<div class="poster-meta">' + (d.year || '') + '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    /* ── Fetch & Init ── */
+    async function init() {
+      try {
+        const [info, epData] = await Promise.all([
+          api('/api/drama/' + encodeURIComponent(dramaId) + '/info'),
+          api('/api/drama/' + encodeURIComponent(dramaId) + '/episodes'),
+        ]);
+
+        if (!info) {
+          showError('Drama tidak ditemukan atau server tidak merespons.');
+          return;
+        }
+
+        renderInfo(info);
+        renderEpisodes(epData ? epData.episodes : []);
+        showContent();
+
+        // Try fetching similar dramas (best-effort, non-blocking)
+        loadSimilar();
+      } catch (err) {
+        console.error('Drama page init error:', err);
+        showError('Terjadi kesalahan saat memuat data drama.');
+      }
+    }
+
+    async function loadSimilar() {
+      try {
+        // Try to get similar dramas from trending or recently-added, excluding current
+        const trending = await api('/api/trending');
+        if (trending && trending.length > 0) {
+          const similar = trending
+            .filter(d => (d.drama_id || d.id) !== dramaId)
+            .slice(0, 8);
+          renderSimilar(similar);
+        }
+      } catch (e) {
+        // silently fail — similar section is optional
+      }
+    }
+
+    /* ── Add to My List (placeholder) ── */
+    window.addToMyList = function() {
+      // TODO: integrate with user list API
+      alert('Drama ditambahkan ke Daftar Saya!');
+    };
+
+    /* ── Boot ── */
+    init();
+  })();
+  </script>
+</body>
+</html>
