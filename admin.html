@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — BLUVIA</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%233b82f6'/><polygon points='12,8 26,16 12,24' fill='white'/></svg>">
+</head>
+<body>
+
+<div class="admin-layout">
+
+  <!-- ═══════════════ SIDEBAR ═══════════════ -->
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar-header">
+      <div class="logo-icon">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><polygon points="4,2 14,8 4,14" fill="white"/></svg>
+      </div>
+      <span class="logo-text">BLUVIA</span>
+      <span class="admin-badge">Admin</span>
+    </div>
+
+    <nav class="admin-nav">
+      <div class="admin-nav-label">Overview</div>
+      <a href="#" class="active" data-page="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </a>
+      <a href="#" data-page="analytics">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Analytics
+      </a>
+
+      <div class="admin-nav-label">Management</div>
+      <a href="#" data-page="users">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Users
+        <span class="nav-badge">47</span>
+      </a>
+      <a href="#" data-page="catalog">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        Catalog
+      </a>
+      <a href="#" data-page="requests">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Requests
+        <span class="nav-badge" style="background:#f59e0b;">3</span>
+      </a>
+      <a href="#" data-page="featured">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Featured
+      </a>
+
+      <div class="admin-nav-label">Content</div>
+      <a href="#" data-page="watch-history">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Watch History
+      </a>
+      <a href="#" data-page="bookmarks">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        Bookmarks
+      </a>
+
+      <div class="admin-nav-label">System</div>
+      <a href="#" data-page="settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </a>
+    </nav>
+
+    <div class="admin-sidebar-footer">
+      <a href="index.html">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Back to Site
+      </a>
+    </div>
+  </aside>
+
+  <!-- ═══════════════ MAIN ═══════════════ -->
+  <div class="admin-main">
+    <!-- Topbar -->
+    <header class="admin-topbar">
+      <div class="admin-topbar-inner">
+        <div class="admin-topbar-left">
+          <h1 id="page-title">Dashboard</h1>
+        </div>
+        <div class="admin-topbar-right">
+          <div class="search-input">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" placeholder="Search...">
+          </div>
+          <button class="action-btn" title="Notifications" style="position:relative;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span style="position:absolute;top:2px;right:2px;width:8px;height:8px;background:#ef4444;border-radius:50%;border:2px solid var(--bg-primary);"></span>
+          </button>
+          <div class="avatar" style="width:32px;height:32px;background:linear-gradient(135deg,#ef4444,#dc2626);">
+            <img src="https://i.pravatar.cc/64?img=12" alt="">
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ═══════════════ DASHBOARD ═══════════════ -->
+    <div class="admin-page active" id="page-dashboard">
+      <div class="admin-content">
+        <!-- Stat Cards -->
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-card-info">
+              <div class="stat-label">Total Users</div>
+              <div class="stat-value">47</div>
+              <div class="stat-change up">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+                +19 this week
+              </div>
+            </div>
+            <div class="stat-card-icon blue">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-info">
+              <div class="stat-label">Catalog</div>
+              <div class="stat-value">4,187</div>
+              <div class="stat-change up">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+                Imported Jun 22
+              </div>
+            </div>
+            <div class="stat-card-icon purple">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-info">
+              <div class="stat-label">Total Watches</div>
+              <div class="stat-value">368</div>
+              <div class="stat-change up">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+                ~23/day avg
+              </div>
+            </div>
+            <div class="stat-card-icon green">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-info">
+              <div class="stat-label">Bookmarks</div>
+              <div class="stat-value">85</div>
+              <div class="stat-change up">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+                Active users
+              </div>
+            </div>
+            <div class="stat-card-icon orange">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-grid">
+          <!-- Weekly Watch Activity -->
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h3>Watch Activity (7 Days)</h3>
+              <span style="font-size:var(--fs-xs);color:var(--text-muted);">Total: 163 watches</span>
+            </div>
+            <div class="admin-card-body">
+              <div class="mini-bar-chart" id="watch-chart">
+                <!-- Bars rendered by JS -->
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:28px;font-size:var(--fs-xs);color:var(--text-muted);">
+                <span>Jun 23</span><span>Jun 24</span><span>Jun 25</span><span>Jun 26</span><span>Jun 27</span><span>Jun 28</span><span>Jun 29</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- User Registrations -->
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h3>New Users</h3>
+              <span style="font-size:var(--fs-xs);color:var(--text-muted);">Last 7 days: 19</span>
+            </div>
+            <div class="admin-card-body">
+              <div style="display:flex;flex-direction:column;gap:var(--space-md);">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-sm) 0;border-bottom:1px solid var(--border);">
+                  <span style="font-size:var(--fs-sm);">Jun 23</span>
+                  <span style="font-size:var(--fs-sm);font-weight:700;color:#22c55e;">+11 users</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-sm) 0;border-bottom:1px solid var(--border);">
+                  <span style="font-size:var(--fs-sm);">Jun 24</span>
+                  <span style="font-size:var(--fs-sm);font-weight:700;">+3 users</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-sm) 0;border-bottom:1px solid var(--border);">
+                  <span style="font-size:var(--fs-sm);">Jun 25</span>
+                  <span style="font-size:var(--fs-sm);font-weight:700;">+2 users</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-sm) 0;">
+                  <span style="font-size:var(--fs-sm);">Jun 26</span>
+                  <span style="font-size:var(--fs-sm);font-weight:700;">+3 users</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Row -->
+        <div class="charts-grid">
+          <!-- Top Dramas -->
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h3>Top Dramas This Week</h3>
+              <a href="#" class="section-link" onclick="switchPage('analytics');return false;">View All</a>
+            </div>
+            <div class="admin-card-body no-pad">
+              <table class="admin-table">
+                <thead><tr><th>#</th><th>Drama</th><th>Watches</th><th>Trend</th></tr></thead>
+                <tbody>
+                  <tr><td style="font-weight:700;color:#f59e0b;">1</td><td>Absolute Value of Romance (2026)</td><td><strong>18</strong></td><td><span style="color:#22c55e;font-size:var(--fs-xs);">🔥 Hot</span></td></tr>
+                  <tr><td style="font-weight:700;color:#94a3b8;">2</td><td>Teach You a Lesson (2026)</td><td><strong>14</strong></td><td><span style="color:#22c55e;font-size:var(--fs-xs);">📈 Rising</span></td></tr>
+                  <tr><td style="font-weight:700;color:#d97706;">3</td><td>A Hundred Memories (2025)</td><td><strong>13</strong></td><td><span style="color:#60a5fa;font-size:var(--fs-xs);">→ Stable</span></td></tr>
+                  <tr><td style="color:var(--text-muted);">4</td><td>Study Group (2025)</td><td><strong>12</strong></td><td><span style="color:#22c55e;font-size:var(--fs-xs);">📈 Rising</span></td></tr>
+                  <tr><td style="color:var(--text-muted);">5</td><td>Reborn Rookie (2026)</td><td><strong>10</strong></td><td><span style="color:#22c55e;font-size:var(--fs-xs);">📈 Rising</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Recent Activity -->
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h3>Recent Activity</h3>
+            </div>
+            <div class="admin-card-body no-pad">
+              <div class="activity-feed">
+                <div class="activity-item">
+                  <div class="activity-dot green"></div>
+                  <div>
+                    <div class="activity-text"><strong>Farida Mustika</strong> watched Big Mouth Ep 10</div>
+                    <div class="activity-time">Today, 04:16</div>
+                  </div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-dot blue"></div>
+                  <div>
+                    <div class="activity-text"><strong>Nur Elisya</strong> binged Study Group Ep 5-10</div>
+                    <div class="activity-time">Yesterday, 05:32 - 13:01</div>
+                  </div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-dot purple"></div>
+                  <div>
+                    <div class="activity-text"><strong>axelia</strong> watched Absolute Value of Romance Ep 10-13</div>
+                    <div class="activity-time">Yesterday, 11:03 - 12:35</div>
+                  </div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-dot orange"></div>
+                  <div>
+                    <div class="activity-text"><strong>valexandria deni</strong> started Twenty Five Twenty One</div>
+                    <div class="activity-time">Yesterday, 10:18</div>
+                  </div>
+                </div>
+                <div class="activity-item">
+                  <div class="activity-dot blue"></div>
+                  <div>
+                    <div class="activity-text"><strong>mimin aya</strong> started Dear X (2025)</div>
+                    <div class="activity-time">Yesterday, 08:02</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ USERS ═══════════════ -->
+    <div class="admin-page" id="page-users">
+      <div class="admin-content">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3>All Users (47)</h3>
+            <div style="display:flex;gap:var(--space-sm);">
+              <div class="search-input" style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.35rem 0.7rem;display:flex;align-items:center;gap:6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" placeholder="Search users..." style="background:transparent;border:none;outline:none;color:var(--text-primary);font-size:var(--fs-sm);width:140px;">
+              </div>
+            </div>
+          </div>
+          <div class="admin-card-body no-pad">
+            <table class="admin-table" id="users-table">
+              <thead><tr><th>User</th><th>Joined</th><th>Watches</th><th>Last Active</th><th>Status</th><th></th></tr></thead>
+              <tbody>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ CATALOG ═══════════════ -->
+    <div class="admin-page" id="page-catalog">
+      <div class="admin-content">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3>Drama Catalog (4,187)</h3>
+            <div style="display:flex;gap:var(--space-sm);">
+              <select style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:var(--fs-sm);padding:0.35rem 0.7rem;">
+                <option>All Categories</option>
+                <option>Drama Korea</option>
+              </select>
+              <div class="search-input" style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.35rem 0.7rem;display:flex;align-items:center;gap:6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" placeholder="Search dramas..." style="background:transparent;border:none;outline:none;color:var(--text-primary);font-size:var(--fs-sm);width:140px;">
+              </div>
+            </div>
+          </div>
+          <div class="admin-card-body no-pad">
+            <table class="admin-table">
+              <thead><tr><th>Title</th><th>Year</th><th>Category</th><th>Episodes</th><th>Status</th><th></th></tr></thead>
+              <tbody>
+                <tr><td><strong>Teach You a Lesson</strong></td><td>2026</td><td>Drakor</td><td>10</td><td><span class="status-badge active">Ongoing</span></td><td><button class="action-btn" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></td></tr>
+                <tr><td><strong>Reborn Rookie</strong></td><td>2026</td><td>Drakor</td><td>10</td><td><span class="status-badge active">Ongoing</span></td><td><button class="action-btn" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></td></tr>
+                <tr><td><strong>Doctor on the Edge</strong></td><td>2026</td><td>Drakor</td><td>6</td><td><span class="status-badge active">Ongoing</span></td><td><button class="action-btn" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></td></tr>
+                <tr><td><strong>My Royal Nemesis</strong></td><td>2026</td><td>Drakor</td><td>14</td><td><span class="status-badge inactive">Completed</span></td><td><button class="action-btn" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></td></tr>
+                <tr><td><strong>Absolute Value of Romance</strong></td><td>2026</td><td>Drakor</td><td>13</td><td><span class="status-badge inactive">Completed</span></td><td><button class="action-btn" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></td></tr>
+                <tr><td><strong>Study Group</strong></td><td>2025</td><td>Drakor</td><td>10</td><td><span class="status-badge inactive">Completed</span></td><td><button class="action-btn" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></td></tr>
+                <tr><td><strong>Love Next Door</strong></td><td>2024</td><td>Drakor</td><td>16</td><td><span class="status-badge inactive">Completed</span></td><td><button class="action-btn" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></td></tr>
+                <tr><td><strong>Parasyte: The Grey</strong></td><td>2024</td><td>Drakor</td><td>6</td><td><span class="status-badge inactive">Completed</span></td><td><button class="action-btn" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ REQUESTS ═══════════════ -->
+    <div class="admin-page" id="page-requests">
+      <div class="admin-content">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3>Drama Requests</h3>
+            <div style="display:flex;gap:var(--space-sm);">
+              <span class="status-badge pending">3 Pending</span>
+            </div>
+          </div>
+          <div class="admin-card-body no-pad">
+            <table class="admin-table">
+              <thead><tr><th>User</th><th>Drama Title</th><th>Notes</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><div class="table-user"><div class="avatar" style="width:28px;height:28px;background:linear-gradient(135deg,#f472b6,#ec4899);font-size:0.6rem;">A</div><span style="font-size:var(--fs-sm);">Alifia Putri</span></div></td>
+                  <td><strong>Queen of Tears</strong></td>
+                  <td style="color:var(--text-secondary);font-size:var(--fs-xs);">Requesting this drama please</td>
+                  <td style="color:var(--text-muted);font-size:var(--fs-xs);">Jun 28</td>
+                  <td><span class="status-badge pending">Pending</span></td>
+                  <td><div style="display:flex;gap:4px;"><button class="action-btn" title="Approve" style="color:#22c55e;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></button><button class="action-btn danger" title="Reject"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div></td>
+                </tr>
+                <tr>
+                  <td><div class="table-user"><div class="avatar" style="width:28px;height:28px;background:linear-gradient(135deg,#60a5fa,#3b82f6);font-size:0.6rem;">N</div><span style="font-size:var(--fs-sm);">Nur Elisya</span></div></td>
+                  <td><strong>My Liberation Notes</strong></td>
+                  <td style="color:var(--text-secondary);font-size:var(--fs-xs);">Bagus banget katanya</td>
+                  <td style="color:var(--text-muted);font-size:var(--fs-xs);">Jun 27</td>
+                  <td><span class="status-badge pending">Pending</span></td>
+                  <td><div style="display:flex;gap:4px;"><button class="action-btn" title="Approve" style="color:#22c55e;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></button><button class="action-btn danger" title="Reject"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div></td>
+                </tr>
+                <tr>
+                  <td><div class="table-user"><div class="avatar" style="width:28px;height:28px;background:linear-gradient(135deg,#a855f7,#7c3aed);font-size:0.6rem;">D</div><span style="font-size:var(--fs-sm);">Devi Abuhasan</span></div></td>
+                  <td><strong>Little Women</strong></td>
+                  <td style="color:var(--text-secondary);font-size:var(--fs-xs);"></td>
+                  <td style="color:var(--text-muted);font-size:var(--fs-xs);">Jun 25</td>
+                  <td><span class="status-badge added">Added</span></td>
+                  <td><span style="font-size:var(--fs-xs);color:var(--text-muted);">Completed</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ FEATURED ═══════════════ -->
+    <div class="admin-page" id="page-featured">
+      <div class="admin-content">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3>Featured Banner</h3>
+            <button class="btn btn-primary btn-sm">+ Add Featured</button>
+          </div>
+          <div class="admin-card-body no-pad">
+            <table class="admin-table">
+              <thead><tr><th>Order</th><th>Drama</th><th>Category</th><th>Episodes</th><th>Actions</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td style="font-weight:700;color:#f59e0b;">1</td>
+                  <td><strong>My Royal Nemesis (2026)</strong></td>
+                  <td>Drama Korea</td>
+                  <td>14</td>
+                  <td><div style="display:flex;gap:4px;"><button class="action-btn" title="Move Up"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg></button><button class="action-btn" title="Move Down"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button><button class="action-btn danger" title="Remove"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div></td>
+                </tr>
+                <tr>
+                  <td style="font-weight:700;color:#94a3b8;">2</td>
+                  <td><strong>Doctor on the Edge (2026)</strong></td>
+                  <td>Drama Korea</td>
+                  <td>6</td>
+                  <td><div style="display:flex;gap:4px;"><button class="action-btn" title="Move Up"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg></button><button class="action-btn" title="Move Down"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button><button class="action-btn danger" title="Remove"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ WATCH HISTORY ═══════════════ -->
+    <div class="admin-page" id="page-watch-history">
+      <div class="admin-content">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3>Watch History (368 total)</h3>
+            <div style="display:flex;gap:var(--space-sm);">
+              <select style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:var(--fs-sm);padding:0.35rem 0.7rem;">
+                <option>Last 7 days</option>
+                <option>Last 30 days</option>
+                <option>All time</option>
+              </select>
+            </div>
+          </div>
+          <div class="admin-card-body no-pad">
+            <table class="admin-table">
+              <thead><tr><th>User</th><th>Drama</th><th>Episode</th><th>Progress</th><th>Watched At</th></tr></thead>
+              <tbody>
+                <tr><td><div class="table-user"><div class="avatar" style="width:28px;height:28px;background:linear-gradient(135deg,#f472b6,#ec4899);font-size:0.6rem;">F</div><div class="table-user-info"><div class="name">Farida Mustika</div><div class="email">faridamustika48@gmail.com</div></div></div></td><td>Big Mouth (2022)</td><td>Episode 10</td><td><div style="display:flex;align-items:center;gap:6px;"><div style="width:60px;height:4px;background:var(--border-light);border-radius:2px;overflow:hidden;"><div style="width:31%;height:100%;background:var(--accent);border-radius:2px;"></div></div><span style="font-size:var(--fs-xs);color:var(--text-muted);">31%</span></div></td><td style="color:var(--text-muted);font-size:var(--fs-xs);">Today, 04:16</td></tr>
+                <tr><td><div class="table-user"><div class="avatar" style="width:28px;height:28px;background:linear-gradient(135deg,#60a5fa,#3b82f6);font-size:0.6rem;">N</div><div class="table-user-info"><div class="name">Nur Elisya</div><div class="email">nurelysa1407@gmail.com</div></div></div></td><td>Study Group (2025)</td><td>Episode 10</td><td><div style="display:flex;align-items:center;gap:6px;"><div style="width:60px;height:4px;background:var(--border-light);border-radius:2px;overflow:hidden;"><div style="width:100%;height:100%;background:#22c55e;border-radius:2px;"></div></div><span style="font-size:var(--fs-xs);color:var(--text-muted);">100%</span></div></td><td style="color:var(--text-muted);font-size:var(--fs-xs);">Yesterday, 13:01</td></tr>
+                <tr><td><div class="table-user"><div class="avatar" style="width:28px;height:28px;background:linear-gradient(135deg,#a855f7,#7c3aed);font-size:0.6rem;">A</div><div class="table-user-info"><div class="name">axelia</div><div class="email">xeliatheexplorer@gmail.com</div></div></div></td><td>Absolute Value of Romance (2026)</td><td>Episode 13</td><td><div style="display:flex;align-items:center;gap:6px;"><div style="width:60px;height:4px;background:var(--border-light);border-radius:2px;overflow:hidden;"><div style="width:85%;height:100%;background:var(--accent);border-radius:2px;"></div></div><span style="font-size:var(--fs-xs);color:var(--text-muted);">85%</span></div></td><td style="color:var(--text-muted);font-size:var(--fs-xs);">Yesterday, 12:35</td></tr>
+                <tr><td><div class="table-user"><div class="avatar" style="width:28px;height:28px;background:linear-gradient(135deg,#f97316,#ea580c);font-size:0.6rem;">V</div><div class="table-user-info"><div class="name">valexandria deni</div><div class="email">valexandriadeni@gmail.com</div></div></div></td><td>Twenty Five Twenty One (2022)</td><td>Episode 3</td><td><div style="display:flex;align-items:center;gap:6px;"><div style="width:60px;height:4px;background:var(--border-light);border-radius:2px;overflow:hidden;"><div style="width:55%;height:100%;background:var(--accent);border-radius:2px;"></div></div><span style="font-size:var(--fs-xs);color:var(--text-muted);">55%</span></div></td><td style="color:var(--text-muted);font-size:var(--fs-xs);">Yesterday, 12:02</td></tr>
+                <tr><td><div class="table-user"><div class="avatar" style="width:28px;height:28px;background:linear-gradient(135deg,#22c55e,#16a34a);font-size:0.6rem;">T</div><div class="table-user-info"><div class="name">Teguh Sanjaya</div><div class="email">teguhsanjaya624@gmail.com</div></div></div></td><td>Reborn Rookie (2026)</td><td>Episode 5</td><td><div style="display:flex;align-items:center;gap:6px;"><div style="width:60px;height:4px;background:var(--border-light);border-radius:2px;overflow:hidden;"><div style="width:70%;height:100%;background:var(--accent);border-radius:2px;"></div></div><span style="font-size:var(--fs-xs);color:var(--text-muted);">70%</span></div></td><td style="color:var(--text-muted);font-size:var(--fs-xs);">Yesterday, 08:07</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ ANALYTICS ═══════════════ -->
+    <div class="admin-page" id="page-analytics">
+      <div class="admin-content">
+        <div class="stat-grid" style="grid-template-columns:repeat(3,1fr);">
+          <div class="stat-card">
+            <div class="stat-card-info">
+              <div class="stat-label">Watches Today</div>
+              <div class="stat-value">1</div>
+            </div>
+            <div class="stat-card-icon green"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-info">
+              <div class="stat-label">Watches This Week</div>
+              <div class="stat-value">163</div>
+            </div>
+            <div class="stat-card-icon blue"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-info">
+              <div class="stat-label">Unique Viewers (7d)</div>
+              <div class="stat-value">12</div>
+            </div>
+            <div class="stat-card-icon purple"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+          </div>
+        </div>
+
+        <div class="charts-grid">
+          <div class="admin-card">
+            <div class="admin-card-header"><h3>Daily Watches (7 Days)</h3></div>
+            <div class="admin-card-body">
+              <div class="mini-bar-chart" id="analytics-chart"></div>
+              <div style="display:flex;justify-content:space-between;margin-top:28px;font-size:var(--fs-xs);color:var(--text-muted);">
+                <span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span>
+              </div>
+            </div>
+          </div>
+          <div class="admin-card">
+            <div class="admin-card-header"><h3>Top Viewers (7d)</h3></div>
+            <div class="admin-card-body no-pad">
+              <table class="admin-table">
+                <thead><tr><th>User</th><th>Watches</th></tr></thead>
+                <tbody>
+                  <tr><td style="font-weight:600;">Teguh Sanjaya</td><td><strong>33</strong></td></tr>
+                  <tr><td style="font-weight:600;">Farida Mustika</td><td><strong>26</strong></td></tr>
+                  <tr><td style="font-weight:600;">Nur Elisya</td><td><strong>21</strong></td></tr>
+                  <tr><td style="font-weight:600;">mimin aya</td><td><strong>17</strong></td></tr>
+                  <tr><td style="font-weight:600;">axelia</td><td><strong>15</strong></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ BOOKMARKS ═══════════════ -->
+    <div class="admin-page" id="page-bookmarks">
+      <div class="admin-content">
+        <div class="admin-card">
+          <div class="admin-card-header"><h3>Bookmarks (85 total)</h3></div>
+          <div class="admin-card-body">
+            <div class="empty-state">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <h4>Bookmark data available via API</h4>
+              <p>Connect to the Bluvia backend to view bookmark details.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ SETTINGS ═══════════════ -->
+    <div class="admin-page" id="page-settings">
+      <div class="admin-content">
+        <div class="admin-card" style="margin-bottom:var(--space-md);">
+          <div class="admin-card-header"><h3>App Settings</h3></div>
+          <div class="admin-card-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-xl);">
+              <div class="input-group">
+                <label class="input-label">App Name</label>
+                <input type="text" value="BLUVIA" style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-md);padding:0.6rem 1rem;color:var(--text-primary);font-size:var(--fs-sm);width:100%;">
+              </div>
+              <div class="input-group">
+                <label class="input-label">Latest Version</label>
+                <input type="text" value="3.41" style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-md);padding:0.6rem 1rem;color:var(--text-primary);font-size:var(--fs-sm);width:100%;">
+              </div>
+              <div class="input-group">
+                <label class="input-label">Force Update Min Code</label>
+                <input type="number" value="335" style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-md);padding:0.6rem 1rem;color:var(--text-primary);font-size:var(--fs-sm);width:100%;">
+              </div>
+              <div class="input-group">
+                <label class="input-label">Update URL</label>
+                <input type="text" value="https://t.me/bluviapp" style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-md);padding:0.6rem 1rem;color:var(--text-primary);font-size:var(--fs-sm);width:100%;">
+              </div>
+            </div>
+            <div style="margin-top:var(--space-xl);">
+              <button class="btn btn-primary">Save Changes</button>
+            </div>
+          </div>
+        </div>
+        <div class="admin-card">
+          <div class="admin-card-header"><h3>Server Info</h3></div>
+          <div class="admin-card-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-lg);">
+              <div><span style="font-size:var(--fs-xs);color:var(--text-muted);display:block;">Backend</span><span style="font-size:var(--fs-sm);font-weight:600;">43.153.207.36:8002</span></div>
+              <div><span style="font-size:var(--fs-xs);color:var(--text-muted);display:block;">Status</span><span style="font-size:var(--fs-sm);font-weight:600;color:#22c55e;">● Healthy</span></div>
+              <div><span style="font-size:var(--fs-xs);color:var(--text-muted);display:block;">Database</span><span style="font-size:var(--fs-sm);font-weight:600;">SQLite (3.1 MB)</span></div>
+              <div><span style="font-size:var(--fs-xs);color:var(--text-muted);display:block;">Service</span><span style="font-size:var(--fs-sm);font-weight:600;">systemd (bluvia-backend)</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /admin-main -->
+</div><!-- /admin-layout -->
+
+<script>
+// ── Page Navigation ──
+function switchPage(page) {
+  document.querySelectorAll('.admin-page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.admin-nav a').forEach(a => a.classList.remove('active'));
+  const target = document.getElementById('page-' + page);
+  if (target) target.classList.add('active');
+  const navLink = document.querySelector(`.admin-nav a[data-page="${page}"]`);
+  if (navLink) navLink.classList.add('active');
+  const titles = {
+    dashboard: 'Dashboard', users: 'Users', catalog: 'Catalog',
+    requests: 'Requests', featured: 'Featured', 'watch-history': 'Watch History',
+    bookmarks: 'Bookmarks', analytics: 'Analytics', settings: 'Settings'
+  };
+  document.getElementById('page-title').textContent = titles[page] || page;
+}
+
+document.querySelectorAll('.admin-nav a[data-page]').forEach(link => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    switchPage(link.dataset.page);
+  });
+});
+
+// ── Render Watch Chart ──
+const watchData = [19, 22, 29, 22, 22, 26, 1];
+const maxWatch = Math.max(...watchData);
+const chart = document.getElementById('watch-chart');
+const analyticsChart = document.getElementById('analytics-chart');
+
+function renderBars(container, data, max) {
+  container.innerHTML = '';
+  data.forEach((val, i) => {
+    const bar = document.createElement('div');
+    bar.className = 'mini-bar';
+    bar.style.height = (val / max * 100) + '%';
+    if (i === data.length - 1) bar.style.opacity = '1';
+    bar.title = val + ' watches';
+    container.appendChild(bar);
+  });
+}
+renderBars(chart, watchData, maxWatch);
+renderBars(analyticsChart, watchData, maxWatch);
+
+// ── Render Users Table ──
+const users = [
+  { name: 'Admin', email: 'admin@bluvia.com', joined: 'Jun 7', watches: 38, lastActive: 'Jun 23', status: 'active', color: '#ef4444' },
+  { name: 'Teguh Sanjaya', email: 'teguhsanjaya624@gmail.com', joined: 'Jun 7', watches: 33, lastActive: 'Jun 28', status: 'active', color: '#22c55e' },
+  { name: 'Alifia Putri', email: 'alifia.oke789@gmail.com', joined: 'Jun 7', watches: 32, lastActive: 'Jun 14', status: 'inactive', color: '#f472b6' },
+  { name: 'Farida Mustika', email: 'faridamustika48@gmail.com', joined: 'Jun 9', watches: 26, lastActive: 'Jun 29', status: 'active', color: '#ec4899' },
+  { name: 'Nur Elisya', email: 'nurelysa1407@gmail.com', joined: 'Jun 10', watches: 21, lastActive: 'Jun 28', status: 'active', color: '#3b82f6' },
+  { name: 'Devi Abuhasan', email: 'deviabuhasan@gmail.com', joined: 'Jun 11', watches: 18, lastActive: 'Jun 27', status: 'active', color: '#a855f7' },
+  { name: 'mimin aya', email: 'ayamimin657@gmail.com', joined: 'Jun 12', watches: 17, lastActive: 'Jun 28', status: 'active', color: '#f97316' },
+  { name: 'Quwensaalmayrah', email: 'quwensaalmayrah@gmail.com', joined: 'Jun 13', watches: 15, lastActive: 'Jun 17', status: 'inactive', color: '#06b6d4' },
+  { name: 'axelia', email: 'xeliatheexplorer@gmail.com', joined: 'Jun 14', watches: 15, lastActive: 'Jun 28', status: 'active', color: '#8b5cf6' },
+  { name: 'NIKAMAN 1312', email: 'aditbopeng10@gmail.com', joined: 'Jun 15', watches: 14, lastActive: 'Jun 28', status: 'active', color: '#64748b' },
+  { name: 'Pida 122', email: 'pida91860@gmail.com', joined: 'Jun 16', watches: 10, lastActive: 'Jun 11', status: 'inactive', color: '#f59e0b' },
+  { name: 'valexandria deni', email: 'valexandriadeni@gmail.com', joined: 'Jun 22', watches: 7, lastActive: 'Jun 28', status: 'active', color: '#10b981' },
+];
+
+const tbody = document.querySelector('#users-table tbody');
+users.forEach(u => {
+  const initial = u.name.charAt(0).toUpperCase();
+  const statusClass = u.status === 'active' ? 'active' : 'inactive';
+  const statusText = u.status === 'active' ? 'Active' : 'Inactive';
+  tbody.innerHTML += `
+    <tr>
+      <td><div class="table-user">
+        <div class="avatar" style="width:32px;height:32px;background:linear-gradient(135deg,${u.color},${u.color}dd);font-size:0.7rem;">${initial}</div>
+        <div class="table-user-info"><div class="name">${u.name}</div><div class="email">${u.email}</div></div>
+      </div></td>
+      <td style="color:var(--text-muted);font-size:var(--fs-xs);">${u.joined}</td>
+      <td><strong>${u.watches}</strong></td>
+      <td style="color:var(--text-muted);font-size:var(--fs-xs);">${u.lastActive}</td>
+      <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+      <td><button class="action-btn" title="View"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></td>
+    </tr>`;
+});
+</script>
+</body>
+</html>
