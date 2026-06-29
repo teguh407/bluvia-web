@@ -565,6 +565,7 @@
   </div><!-- /admin-main -->
 </div><!-- /admin-layout -->
 
+<script src="js/admin-api.js"></script>
 <script>
 // ── Page Navigation ──
 function switchPage(page) {
@@ -589,60 +590,7 @@ document.querySelectorAll('.admin-nav a[data-page]').forEach(link => {
   });
 });
 
-// ── Render Watch Chart ──
-const watchData = [19, 22, 29, 22, 22, 26, 1];
-const maxWatch = Math.max(...watchData);
-const chart = document.getElementById('watch-chart');
-const analyticsChart = document.getElementById('analytics-chart');
-
-function renderBars(container, data, max) {
-  container.innerHTML = '';
-  data.forEach((val, i) => {
-    const bar = document.createElement('div');
-    bar.className = 'mini-bar';
-    bar.style.height = (val / max * 100) + '%';
-    if (i === data.length - 1) bar.style.opacity = '1';
-    bar.title = val + ' watches';
-    container.appendChild(bar);
-  });
-}
-renderBars(chart, watchData, maxWatch);
-renderBars(analyticsChart, watchData, maxWatch);
-
-// ── Render Users Table ──
-const users = [
-  { name: 'Admin', email: 'admin@bluvia.com', joined: 'Jun 7', watches: 38, lastActive: 'Jun 23', status: 'active', color: '#ef4444' },
-  { name: 'Teguh Sanjaya', email: 'teguhsanjaya624@gmail.com', joined: 'Jun 7', watches: 33, lastActive: 'Jun 28', status: 'active', color: '#22c55e' },
-  { name: 'Alifia Putri', email: 'alifia.oke789@gmail.com', joined: 'Jun 7', watches: 32, lastActive: 'Jun 14', status: 'inactive', color: '#f472b6' },
-  { name: 'Farida Mustika', email: 'faridamustika48@gmail.com', joined: 'Jun 9', watches: 26, lastActive: 'Jun 29', status: 'active', color: '#ec4899' },
-  { name: 'Nur Elisya', email: 'nurelysa1407@gmail.com', joined: 'Jun 10', watches: 21, lastActive: 'Jun 28', status: 'active', color: '#3b82f6' },
-  { name: 'Devi Abuhasan', email: 'deviabuhasan@gmail.com', joined: 'Jun 11', watches: 18, lastActive: 'Jun 27', status: 'active', color: '#a855f7' },
-  { name: 'mimin aya', email: 'ayamimin657@gmail.com', joined: 'Jun 12', watches: 17, lastActive: 'Jun 28', status: 'active', color: '#f97316' },
-  { name: 'Quwensaalmayrah', email: 'quwensaalmayrah@gmail.com', joined: 'Jun 13', watches: 15, lastActive: 'Jun 17', status: 'inactive', color: '#06b6d4' },
-  { name: 'axelia', email: 'xeliatheexplorer@gmail.com', joined: 'Jun 14', watches: 15, lastActive: 'Jun 28', status: 'active', color: '#8b5cf6' },
-  { name: 'NIKAMAN 1312', email: 'aditbopeng10@gmail.com', joined: 'Jun 15', watches: 14, lastActive: 'Jun 28', status: 'active', color: '#64748b' },
-  { name: 'Pida 122', email: 'pida91860@gmail.com', joined: 'Jun 16', watches: 10, lastActive: 'Jun 11', status: 'inactive', color: '#f59e0b' },
-  { name: 'valexandria deni', email: 'valexandriadeni@gmail.com', joined: 'Jun 22', watches: 7, lastActive: 'Jun 28', status: 'active', color: '#10b981' },
-];
-
-const tbody = document.querySelector('#users-table tbody');
-users.forEach(u => {
-  const initial = u.name.charAt(0).toUpperCase();
-  const statusClass = u.status === 'active' ? 'active' : 'inactive';
-  const statusText = u.status === 'active' ? 'Active' : 'Inactive';
-  tbody.innerHTML += `
-    <tr>
-      <td><div class="table-user">
-        <div class="avatar" style="width:32px;height:32px;background:linear-gradient(135deg,${u.color},${u.color}dd);font-size:0.7rem;">${initial}</div>
-        <div class="table-user-info"><div class="name">${u.name}</div><div class="email">${u.email}</div></div>
-      </div></td>
-      <td style="color:var(--text-muted);font-size:var(--fs-xs);">${u.joined}</td>
-      <td><strong>${u.watches}</strong></td>
-      <td style="color:var(--text-muted);font-size:var(--fs-xs);">${u.lastActive}</td>
-      <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-      <td><button class="action-btn" title="View"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></td>
-    </tr>`;
-});
+// Charts and data are loaded by js/admin-api.js via API
 </script>
 </body>
 </html>
