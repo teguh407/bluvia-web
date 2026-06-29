@@ -297,15 +297,18 @@ async function initLanding() {
   const isSearch = await initSearchResults();
   if (isSearch) return; // search results already rendered
 
-  const [featured, trending, recently] = await Promise.all([
+  const [featuredRes, trendingRes, recentlyRes] = await Promise.all([
     api('/api/featured'),
     api('/api/trending'),
     api('/api/recently-added'),
   ]);
+  const featured = featuredRes?.dramas || featuredRes || [];
+  const trending = trendingRes?.dramas || trendingRes || [];
+  const recently = recentlyRes?.dramas || recentlyRes || [];
 
   // Featured → Hero
-  if (featured && featured.dramas && featured.dramas.length > 0) {
-    const f = featured.dramas[0];
+  if (featured && featured.length > 0) {
+    const f = featured[0];
     const heroCard = document.querySelector('.hero-new-ep-card');
     if (heroCard) {
       const badge = heroCard.querySelector('.badge');
@@ -382,15 +385,18 @@ async function initLanding() {
 
 // ── Home Page (After Login) ──
 async function initHome() {
-  const [featured, trending, recently] = await Promise.all([
+  const [featuredRes, trendingRes, recentlyRes] = await Promise.all([
     api('/api/featured'),
     api('/api/trending'),
     api('/api/recently-added'),
   ]);
+  const featured = featuredRes?.dramas || featuredRes || [];
+  const trending = trendingRes?.dramas || trendingRes || [];
+  const recently = recentlyRes?.dramas || recentlyRes || [];
 
   // Featured → Hero banner
-  if (featured && featured.dramas && featured.dramas.length > 0) {
-    const f = featured.dramas[0];
+  if (featured && featured.length > 0) {
+    const f = featured[0];
     const heroLeft = document.querySelector('.hero-slide-left');
     if (heroLeft) {
       const badge = heroLeft.querySelector('.badge');
@@ -415,8 +421,8 @@ async function initHome() {
   }
 
   // Second featured → hero card
-  if (featured && featured.dramas && featured.dramas.length > 1) {
-    const f2 = featured.dramas[1];
+  if (featured && featured.length > 1) {
+    const f2 = featured[1];
     const heroCard = document.querySelector('.hero-card');
     if (heroCard) {
       const badge = heroCard.querySelector('.badge');
