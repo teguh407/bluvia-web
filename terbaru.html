@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terbaru — BLUVIA</title>
+  <meta name="description" content="Drama terbaru di BLUVIA.">
+  <meta property="og:title" content="Terbaru — BLUVIA">
+  <meta property="og:description" content="Drama terbaru di BLUVIA.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/home.css?v=20260704d">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%233b82f6'/><polygon points='12,8 26,16 12,24' fill='white'/></svg>">
+  <style>
+    /* ── Breadcrumb ── */
+    .page-breadcrumb {
+      display: flex; align-items: center; gap: var(--space-sm);
+      margin-bottom: var(--space-lg); font-size: var(--fs-sm);
+      color: var(--text-muted); flex-wrap: wrap;
+    }
+    .page-breadcrumb a { color: var(--text-muted); transition: color 0.2s; }
+    .page-breadcrumb a:hover { color: var(--accent); }
+    .page-breadcrumb .bc-sep { color: var(--text-muted); opacity: 0.5; }
+    .page-breadcrumb .bc-current { color: var(--text-secondary); font-weight: 600; }
+
+    .page-title {
+      font-size: var(--fs-2xl);
+      font-weight: 800;
+      margin-bottom: var(--space-xl);
+    }
+
+    /* ── Drama Grid ── */
+    .drama-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: var(--space-lg);
+    }
+    .drama-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.3s var(--ease);
+      text-decoration: none;
+      color: inherit;
+    }
+    .drama-card:hover {
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+      border-color: var(--accent);
+    }
+    .drama-card .poster-wrap {
+      position: relative;
+      aspect-ratio: 2/3;
+      overflow: hidden;
+    }
+    .drama-card .poster-img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      background: var(--bg-secondary);
+      transition: transform 0.3s;
+    }
+    .drama-card:hover .poster-img { transform: scale(1.05); }
+    .drama-card .ep-badge {
+      position: absolute;
+      bottom: 8px; right: 8px;
+      background: var(--accent-gradient);
+      color: #fff;
+      font-size: var(--fs-xs);
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+    }
+    .drama-card .card-info {
+      padding: var(--space-md);
+    }
+    .drama-card .card-title {
+      font-size: var(--fs-sm);
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
+    }
+    .drama-card .card-year {
+      font-size: var(--fs-xs);
+      color: var(--text-muted);
+    }
+
+    /* ── Loading ── */
+    .loading-state {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; min-height: 300px; gap: var(--space-md);
+    }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid var(--border-light);
+      border-top-color: var(--accent);
+      border-radius: var(--radius-full);
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-state p { font-size: var(--fs-sm); color: var(--text-secondary); }
+
+    @media (max-width: 768px) {
+      .drama-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: var(--space-md); }
+    }
+  </style>
+<script>if(localStorage.getItem('bluvia_theme')==='light')document.body.classList.add('light-mode')</script>
+</head>
+<body data-page="terbaru">
+
+  <!-- ═══════════════ SIDEBAR ═══════════════ -->
+  <aside class="sidebar">
+    <a href="home.html" class="logo">
+      <div class="logo-icon">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><polygon points="4,2 14,8 4,14" fill="white"/></svg>
+      </div>
+      <span class="logo-text">BLUVIA</span>
+    </a>
+
+    <div class="sidebar-profile">
+      <div class="avatar" style="background:linear-gradient(135deg,#60a5fa,#3b82f6)">
+        <img src="https://i.pravatar.cc/80?img=12" alt="">
+      </div>
+      <div class="profile-info">
+        <div class="profile-greeting">Halo, Pengunjung 👋</div>
+        <div class="profile-sub">Mau nonton apa hari ini?</div>
+      </div>
+    </div>
+
+    <div class="sidebar-upgrade">
+      <div class="sidebar-upgrade-left">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <div>
+          Upgrade ke Premium
+          <span class="sidebar-upgrade-sub">Nonton semua drama tanpa iklan</span>
+        </div>
+      </div>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+
+    <div class="sidebar-menu-label">Menu Utama</div>
+    <nav class="sidebar-menu">
+      <a href="home.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Home
+      </a>
+      <a href="ongoing.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Ongoing
+      </a>
+      <a href="terbaru.html" class="active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Terbaru
+      </a>
+      <a href="favorites.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        Daftar Suka
+      </a>
+      <a href="kategori.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Kategori
+      </a>
+    </nav>
+
+    <div class="sidebar-menu-label">Akun & Lainnya</div>
+    <nav class="sidebar-menu">
+      <a href="riwayat.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Riwayat Tonton
+      </a>
+      <a href="downloads.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Downloads
+      </a>
+      <a href="daftar-saya.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        Daftar Saya
+      </a>
+      <a href="settings.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Pengaturan
+      </a>
+    </nav>
+
+    <div class="sidebar-toggle" style="padding: 0.55rem 0.5rem;">
+      <span style="display:flex;align-items:center;gap:0.75rem;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        Dark Mode
+      </span>
+      <div class="toggle-switch" id="dark-toggle" onclick="toggleDarkMode()"></div>
+    </div>
+
+    <div class="sidebar-bottom">
+      <div class="sidebar-download">
+        <p>Download Aplikasi BLUVIA</p>
+        <div class="sub">Nonton lebih nyaman di aplikasi</div>
+        <div class="store-badges">
+          <a href="#" class="store-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 20.5V3.5c0-.94.63-1.6 1.36-1.6.3 0 .58.12.82.34l13.96 8.26c.5.3.5.98 0 1.28L5.18 20.16c-.24.22-.52.34-.82.34C3.63 22.1 3 21.44 3 20.5z"/></svg>
+            Google Play
+          </a>
+          <a href="#" class="store-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+            App Store
+          </a>
+        </div>
+      </div>
+      <p style="font-size:var(--fs-xs);color:var(--text-muted);margin-top:var(--space-lg);padding-left:var(--space-sm);">© 2025 BLUVIA. All rights reserved.</p>
+    </div>
+  </aside>
+
+  <!-- ═══════════════ MAIN ═══════════════ -->
+  <div class="home-main">
+    <!-- Top Nav -->
+    <header class="top-nav">
+      <div class="top-nav-inner">
+        <button class="hamburger-btn" id="hamburgerBtn" aria-label="Menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="top-nav-links">
+          <a href="home.html">Home</a>
+          <a href="ongoing.html">Ongoing</a>
+          <a href="terbaru.html" class="active">Terbaru</a>
+          <a href="favorites.html">Daftar Suka</a>
+          <a href="kategori.html">Kategori</a>
+        </div>
+        <div class="top-nav-right">
+          <div class="search-bar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" placeholder="Cari drama favoritmu...">
+          </div>
+          <button class="notification-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="notif-dot"></span>
+          </button>
+          <div class="user-menu">
+            <div class="avatar" style="width:32px;height:32px;">
+              <img src="https://i.pravatar.cc/64?img=12" alt="">
+            </div>
+            <span class="nav-user-name">Pengunjung</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <div class="home-content">
+      <nav class="page-breadcrumb">
+        <a href="home.html">Home</a>
+        <span class="bc-sep">›</span>
+        <span class="bc-current">Terbaru</span>
+      </nav>
+
+      <h1 class="page-title">🆕 Terbaru</h1>
+
+      <!-- Loading -->
+      <div id="page-loading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Memuat drama terbaru...</p>
+      </div>
+
+      <!-- Drama Grid -->
+      <div class="drama-grid" id="drama-grid"></div>
+    </div>
+  </div>
+
+  <script>
+    fetch('/api/home/trending')
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById('page-loading').style.display = 'none';
+        const grid = document.getElementById('drama-grid');
+        if (!data.dramas || data.dramas.length === 0) {
+          grid.innerHTML = '<p style="color:var(--text-muted);grid-column:1/-1;text-align:center;padding:var(--space-2xl);">Tidak ada drama terbaru saat ini.</p>';
+          return;
+        }
+        data.dramas.forEach(item => {
+          const a = document.createElement('a');
+          const category = item.category || 'drama-korea';
+          a.href = 'drama.html?id=' + category + '/' + item.slug;
+          a.className = 'drama-card';
+          a.innerHTML = `
+            <div class="poster-wrap">
+              <img class="poster-img" src="${item.poster_url || ''}" alt="${item.title}" loading="lazy">
+              ${item.episode ? '<span class="ep-badge">Ep ' + item.episode + '</span>' : ''}
+            </div>
+            <div class="card-info">
+              <div class="card-title">${item.title}</div>
+              <div class="card-year">${item.year || ''}</div>
+            </div>`;
+          grid.appendChild(a);
+        });
+      })
+      .catch(err => {
+        document.getElementById('page-loading').style.display = 'none';
+        document.getElementById('drama-grid').innerHTML = '<p style="color:var(--text-muted);grid-column:1/-1;text-align:center;padding:var(--space-2xl);">Gagal memuat data. Coba lagi nanti.</p>';
+      });
+  </script>
+<script src="js/site-api.js?v=20260704e"></script>
+</body>
+</html>

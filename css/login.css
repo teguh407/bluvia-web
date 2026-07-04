@@ -4,8 +4,10 @@
 
 .login-page {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
+.login-page ~ * { display: none; }
 
 /* ── Left: Branding ── */
 .login-brand {
@@ -14,52 +16,52 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: var(--space-2xl);
+  padding: var(--space-xl) var(--space-2xl);
   overflow: hidden;
 }
 .login-brand-bg {
   position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(8,12,24,0.92) 30%, rgba(8,12,24,0.6)),
-              url('https://image.tmdb.org/t/p/w1280/gG9fTyDL0pTWzSD7Q0bBiX5VPj.jpg') center/cover;
+  background: linear-gradient(135deg, rgba(8,12,24,0.92) 20%, rgba(8,12,24,0.82) 60%, rgba(8,12,24,0.70)),
+              url('../img/login-bg.png') center/cover;
 }
 .login-brand-content {
   position: relative; z-index: 1;
   max-width: 440px;
+  margin: 0 auto;
 }
 .login-brand .logo {
-  display: flex; align-items: center; gap: var(--space-sm);
-  margin-bottom: var(--space-2xl);
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-xs);
+  margin-bottom: var(--space-xl);
 }
-.login-brand .logo-icon {
+.login-brand .logo-img {
   width: 40px; height: 40px;
-  background: var(--accent-gradient);
   border-radius: var(--radius-md);
-  display: flex; align-items: center; justify-content: center;
+  object-fit: contain;
 }
 .login-brand .logo-text { font-size: var(--fs-xl); font-weight: 800; letter-spacing: -0.02em; }
 .login-brand h1 {
-  font-size: var(--fs-3xl); font-weight: 800; line-height: 1.2;
-  margin-bottom: var(--space-md);
+  font-size: var(--fs-2xl); font-weight: 800; line-height: 1.2;
+  margin-bottom: var(--space-sm);
 }
 .login-brand h1 span { color: var(--accent); }
 .login-brand p {
-  font-size: var(--fs-base); color: var(--text-secondary);
-  margin-bottom: var(--space-2xl); line-height: 1.7;
+  font-size: var(--fs-sm); color: var(--text-secondary);
+  margin-bottom: var(--space-xl); line-height: 1.6;
 }
 .login-features {
-  display: flex; gap: var(--space-xl);
+  display: flex; gap: var(--space-lg);
 }
 .login-feature {
   text-align: center;
   flex: 1;
 }
 .login-feature-icon {
-  width: 56px; height: 56px;
+  width: 48px; height: 48px;
   border-radius: var(--radius-lg);
   background: rgba(59, 130, 246, 0.1);
   border: 1px solid rgba(59, 130, 246, 0.2);
   display: flex; align-items: center; justify-content: center;
-  margin: 0 auto var(--space-sm);
+  margin: 0 auto var(--space-xs);
   font-size: 1.3rem;
 }
 .login-feature-title { font-weight: 600; font-size: var(--fs-sm); margin-bottom: 2px; }
@@ -72,7 +74,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-2xl);
+  padding: var(--space-xl);
   background: var(--bg-secondary);
 }
 .login-form-card {
@@ -80,15 +82,14 @@
   max-width: 400px;
 }
 .login-form-card .logo {
-  display: flex; align-items: center; gap: var(--space-sm);
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-xs);
   justify-content: center;
   margin-bottom: var(--space-xl);
 }
-.login-form-card .logo-icon {
+.login-form-card .logo-img {
   width: 36px; height: 36px;
-  background: var(--accent-gradient);
   border-radius: var(--radius-sm);
-  display: flex; align-items: center; justify-content: center;
+  object-fit: contain;
 }
 .login-form-card .logo-text { font-size: var(--fs-lg); font-weight: 800; }
 
@@ -100,7 +101,7 @@
   text-align: center; font-size: var(--fs-sm); color: var(--text-secondary);
   margin-bottom: var(--space-xl);
 }
-.login-form { display: flex; flex-direction: column; gap: var(--space-lg); }
+.login-form { display: flex; flex-direction: column; gap: var(--space-md); }
 
 .login-form .forgot-link {
   text-align: right; font-size: var(--fs-xs); color: var(--accent);
@@ -161,4 +162,11 @@
     width: 100%;
     background: var(--bg-primary);
   }
+}
+
+@media (max-width: 480px) {
+  .login-form-side { padding: 1.5rem; }
+  .login-form-side h2 { font-size: 1.3rem; }
+  .login-form-side .btn { width: 100%; }
+  .form-group input { font-size: 14px; padding: 12px; }
 }

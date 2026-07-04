@@ -61,7 +61,7 @@ function makeDramaClickable(element, drama) {
   // Wrap inner HTML with <a> tag for right-click "Open in new tab"
   const link = document.createElement('a');
   link.href = dramaId ? `/drama/${dramaId}` : '#';
-  link.style.cssText = 'color:inherit;text-decoration:none;display:block;';
+  link.style.cssText = 'color:inherit;text-decoration:none;display:flex;align-items:center;gap:inherit;width:100%;';
   // Move all children into the link
   while (element.firstChild) {
     link.appendChild(element.firstChild);
@@ -158,7 +158,7 @@ function initNavigation() {
         const title = titleEl.textContent.trim();
         const link = document.createElement('a');
         link.href = title ? `/drama/drama-korea/${encodeURIComponent(title)}` : '#';
-        link.style.cssText = 'color:inherit;text-decoration:none;display:block;';
+        link.style.cssText = 'color:inherit;text-decoration:none;display:flex;align-items:center;gap:inherit;width:100%;';
         while (card.firstChild) link.appendChild(card.firstChild);
         card.appendChild(link);
       }
@@ -414,7 +414,16 @@ function initHomeAuth() {
       greetingEl.textContent = `Halo, ${displayName} 👋`;
       if (navNameEl) navNameEl.textContent = displayName;
     } else {
-      greetingEl.innerHTML = `Halo, Pengunjung 👋<br><a href="login.html" style="font-size:var(--fs-xs);color:var(--accent);">Login untuk fitur lengkap</a>`;
+      greetingEl.innerHTML = `Halo, Pengunjung 👋`;
+      const subEl = document.querySelector('.profile-sub');
+      if (subEl && !subEl.nextElementSibling?.classList?.contains('login-btn')) {
+        const loginBtn = document.createElement('a');
+        loginBtn.href = 'login.html';
+        loginBtn.className = 'login-btn';
+        loginBtn.textContent = 'Login untuk fitur lengkap';
+        loginBtn.style.cssText = 'display:inline-block;margin-top:8px;padding:0.35rem 1rem;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;font-size:0.75rem;font-weight:600;border-radius:9999px;text-decoration:none;transition:all 0.2s';
+        subEl.parentElement.appendChild(loginBtn);
+      }
       if (navNameEl) navNameEl.textContent = "Pengunjung";
     }
   }
@@ -1323,3 +1332,21 @@ function saveContinueWatching(dramaId, title, episode, poster) {
   localStorage.setItem('bluvia_watch_history', JSON.stringify(history));
 }
 
+
+// ── Dark Mode Toggle ──
+function toggleDarkMode() {
+  document.body.classList.toggle("light-mode");
+  const isLight = document.body.classList.contains("light-mode");
+  localStorage.setItem("bluvia_theme", isLight ? "light" : "dark");
+  const toggle = document.getElementById("dark-toggle");
+  if (toggle) toggle.classList.toggle("off", !isLight);
+}
+
+(function initTheme() {
+  const saved = localStorage.getItem("bluvia_theme");
+  if (saved === "light") {
+    document.body.classList.add("light-mode");
+    const toggle = document.getElementById("dark-toggle");
+    if (toggle) toggle.classList.remove("off");
+  }
+})();

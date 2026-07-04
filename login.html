@@ -6,27 +6,26 @@
   <title>Masuk — BLUVIA</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/login.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%233b82f6'/><polygon points='12,8 26,16 12,24' fill='white'/></svg>">
+  <link rel="icon" href="img/logo-bluvia.png">
+  <style>body { padding-bottom: 0 !important; overflow: hidden !important; }</style>
 </head>
 <body>
   <div class="login-page">
 
-    <!-- ═══════════════ LEFT: BRANDING ═══════════════ -->
+    <!-- LEFT: BRANDING -->
     <div class="login-brand">
       <div class="login-brand-bg"></div>
       <div class="login-brand-content">
-        <div class="logo">
-          <div class="logo-icon">
-            <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><polygon points="4,2 14,8 4,14" fill="white"/></svg>
-          </div>
-          <span class="logo-text">BLUVIA</span>
+        <div class="logo" style="display:flex;flex-direction:column;align-items:center;gap:4px">
+          <img src="img/logo-bluvia.png" alt="BLUVIA" style="width:48px;height:48px;border-radius:10px;object-fit:contain">
+          <span class="logo-text" style="font-size:20px;font-weight:800">BLUVIA</span>
         </div>
         <h1>Nonton Drama Favoritmu<br><span>Kapan Saja, Di Mana Saja</span></h1>
         <p>Ribuan drama terbaik dari berbagai genre, update terbaru setiap hari, kualitas HD.</p>
         <div class="login-features">
           <div class="login-feature">
             <div class="login-feature-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
             </div>
             <div class="login-feature-title">Koleksi Lengkap</div>
             <div class="login-feature-desc">Ribuan judul drama dari berbagai genre</div>
@@ -50,19 +49,17 @@
       <div class="login-brand-footer">© 2025 BLUVIA. All rights reserved.</div>
     </div>
 
-    <!-- ═══════════════ RIGHT: FORM ═══════════════ -->
+    <!-- RIGHT: FORM -->
     <div class="login-form-side">
       <div class="login-form-card">
-        <div class="logo">
-          <div class="logo-icon">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><polygon points="4,2 14,8 4,14" fill="white"/></svg>
-          </div>
-          <span class="logo-text">BLUVIA</span>
+        <div class="logo" style="display:flex;flex-direction:column;align-items:center;gap:4px">
+          <img src="img/logo-bluvia.png" alt="BLUVIA" style="width:44px;height:44px;border-radius:10px;object-fit:contain">
+          <span class="logo-text" style="font-size:18px;font-weight:800">BLUVIA</span>
         </div>
         <h2>Selamat Datang Kembali!</h2>
         <p class="subtitle">Masuk untuk melanjutkan pengalaman menontonmu</p>
 
-        <form class="login-form" onsubmit="event.preventDefault(); window.location.href='home.html';">
+        <form class="login-form">
           <div class="input-group">
             <label class="input-label">Email atau Username</label>
             <div class="input-wrapper">
@@ -88,6 +85,8 @@
 
           <a href="#" style="font-size: var(--fs-xs); color: var(--accent); text-align: right; display: block; margin-top: -8px;">Lupa Password?</a>
 
+          <div id="login-error" style="display:none;color:#ef4444;font-size:var(--fs-xs);margin-bottom:8px;text-align:center"></div>
+
           <button type="submit" class="login-btn">Masuk</button>
 
           <div class="divider">atau masuk dengan</div>
@@ -97,7 +96,7 @@
             Lanjutkan dengan Google
           </button>
 
-          <p class="signup-link">Belum punya akun? <a href="#">Daftar sekarang</a></p>
+          <p class="signup-link">Belum punya akun? <a href="register.html">Daftar sekarang</a></p>
         </form>
       </div>
     </div>

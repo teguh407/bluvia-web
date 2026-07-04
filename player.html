@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Player — BLUVIA</title>
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/home.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%233b82f6'/><polygon points='12,8 26,16 12,24' fill='white'/></svg>">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/home.css?v=20260704d">
+  <link rel="icon" href="/img/logo-bluvia.png">
   <style>
     /* ── Player Page Styles ── */
     body { background: var(--bg-primary); }
@@ -214,7 +214,7 @@
       flex-shrink: 0;
     }
     .ep-card.active .playing-indicator {
-      display: block;
+      display: none;
     }
     .playing-indicator .bar {
       width: 3px; height: 12px;
@@ -245,6 +245,45 @@
       margin-bottom: var(--space-lg);
     }
 
+    /* Quality Picker */
+    .quality-picker {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-sm);
+      margin-top: var(--space-sm);
+    }
+    .quality-picker label {
+      font-size: var(--fs-xs);
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .quality-btn-group {
+      display: inline-flex;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .quality-btn {
+      padding: 0.35rem 0.75rem;
+      background: var(--bg-secondary);
+      border: none;
+      color: var(--text-secondary);
+      font-size: var(--fs-xs);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border-right: 1px solid var(--border);
+    }
+    .quality-btn:last-child { border-right: none; }
+    .quality-btn:hover {
+      background: var(--bg-card-hover);
+      color: var(--text-primary);
+    }
+    .quality-btn.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
       .player-wrapper { padding: var(--space-md); }
@@ -273,6 +312,14 @@
       <video id="videoPlayer" controls preload="metadata" playsinline>
         Browser Anda tidak mendukung pemutar video.
       </video>
+    </div>
+
+    <!-- Quality Picker -->
+    <div class="quality-picker" id="qualityPicker" style="display:none;">
+      <label>Kualitas:</label>
+      <div class="quality-btn-group" id="qualityBtnGroup">
+        <!-- Buttons populated by JS -->
+      </div>
     </div>
 
     <!-- Episode Info & Navigation -->
@@ -313,18 +360,30 @@
 
   </div>
 
-  <script src="js/site-api.js"></script>
+  <script src="/js/site-api.js"></script>
   <script>
     // ── Player Page Logic ──
     (function() {
       const params = new URLSearchParams(window.location.search);
-      const dramaId = params.get('drama');
-      const currentEp = parseInt(params.get('ep')) || 1;
+      // Parse clean URL: /play/{dramaId}?ep=1
+      const pathMatch = window.location.pathname.startsWith('/play/') ? [null, window.location.pathname.slice(6)] : null;
+      const dramaIdClean = pathMatch ? decodeURIComponent(pathMatch[1]) : null;
+      const dramaId = dramaIdClean || params.get("drama");
+      let currentEp = parseInt(params.get('ep')) || 1;
 
       let dramaInfo = null;
       let episodes = [];
 
-      const videoPlayer = document.getElementById('videoPlayer');
+            // Direct CDN proxy: /v/{host}{path}?query — zero Python overhead
+      function toCdnProxy(url) {
+        if (!url || !url.startsWith('http://')) return url;
+        try {
+          const u = new URL(url);
+          return '/v/' + u.host + u.pathname + u.search;
+        } catch(e) { return url; }
+      }
+
+const videoPlayer = document.getElementById('videoPlayer');
       const videoLoading = document.getElementById('videoLoading');
       const dramaTitle = document.getElementById('dramaTitle');
       const episodeName = document.getElementById('episodeName');
@@ -344,7 +403,7 @@
       }
 
       // Set back button link
-      backBtn.href = `drama.html?id=${encodeURIComponent(dramaId)}`;
+      backBtn.href = `/drama/${dramaId}`;
 
       // Fetch data
       async function init() {
@@ -363,7 +422,7 @@
           episodes = (epsData && epsData.episodes) ? epsData.episodes : (Array.isArray(epsData) ? epsData : []);
 
           // Sort episodes by number
-          episodes.sort((a, b) => (a.number || a.ep || 0) - (b.number || b.ep || 0));
+          episodes.sort((a, b) => (a.number || a.ep || a.episode_number || 0) - (b.number || b.ep || b.episode_number || 0));
 
           // Update page title and info
           if (dramaInfo) {
@@ -381,6 +440,69 @@
           renderEpisodeList();
           updateNavButtons();
 
+          // ── Quality Picker ──
+          const qualityPicker = document.getElementById('qualityPicker');
+          const qualityBtnGroup = document.getElementById('qualityBtnGroup');
+          let currentQualities = [];
+
+          async function loadQualities(slug, epNum) {
+            try {
+              const res = await api(`/api/drk/drama/${encodeURIComponent(slug)}/quality/${epNum}`);
+              const quals = res?.qualities || [];
+              currentQualities = quals;
+
+              if (quals.length <= 1) {
+                qualityPicker.style.display = 'none';
+                return;
+              }
+
+              qualityPicker.style.display = 'inline-flex';
+              qualityBtnGroup.innerHTML = '';
+
+              quals.forEach((q, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'quality-btn' + (idx === quals.length - 1 ? ' active' : '');
+                btn.textContent = q.quality;
+                btn.dataset.url = q.url;
+                btn.addEventListener('click', () => {
+                  document.querySelectorAll('.quality-btn').forEach(b => b.classList.remove('active'));
+                  btn.classList.add('active');
+                  const currentTime = videoPlayer.currentTime;
+                  const wasPlaying = !videoPlayer.paused;
+
+                  // Proper source switch
+                  videoPlayer.pause();
+                  videoPlayer.removeAttribute('src');
+                  videoPlayer.load(); // reset
+
+                  showVideoLoading(true);
+                  videoPlayer.src = q.url.startsWith("http://") ? toCdnProxy(q.url) : q.url;
+                  videoPlayer.load();
+
+                  const onReady = () => {
+                    videoPlayer.removeEventListener('canplay', onReady);
+                    videoPlayer.removeEventListener('loadeddata', onReady);
+                    videoPlayer.currentTime = currentTime;
+                    showVideoLoading(false);
+                    if (wasPlaying) videoPlayer.play().catch(() => {});
+                  };
+                  videoPlayer.addEventListener('canplay', onReady, { once: true });
+                  videoPlayer.addEventListener('loadeddata', onReady, { once: true });
+
+                  // Fallback: if neither fires in 10s, hide loading anyway
+                  setTimeout(() => showVideoLoading(false), 10000);
+                });
+                qualityBtnGroup.appendChild(btn);
+              });
+            } catch (e) {
+              qualityPicker.style.display = 'none';
+            }
+          }
+
+          // Load quality options for this episode
+          const slugForQuality = dramaId.includes('/') ? dramaId.split('/').pop() : dramaId;
+          loadQualities(slugForQuality, currentEp);
+
         } catch (err) {
           console.error('Init error:', err);
           showError('Terjadi kesalahan saat memuat data.');
@@ -388,7 +510,7 @@
       }
 
       function loadEpisode(epNum) {
-        const ep = episodes.find(e => (e.number || e.ep) === epNum);
+        const ep = episodes.find(e => (e.number || e.ep || e.episode_number) === epNum);
         if (!ep) {
           episodeName.textContent = `Episode ${epNum}`;
           showVideoLoading(false);
@@ -399,13 +521,51 @@
         episodeName.textContent = epTitle;
         document.title = `${epTitle} — ${dramaInfo ? dramaInfo.title : cleanTitle(dramaId)} — BLUVIA`;
 
-        const streamUrl = ep.streaming_url || ep.url || ep.video_url || '';
+        let streamUrl = ep.streaming_url || ep.url || ep.video_url || '';
+        // Proxy HTTP URLs through nginx /v/ direct CDN (zero Python overhead)
+        if (streamUrl && streamUrl.startsWith('http://')) {
+          streamUrl = toCdnProxy(streamUrl);
+        }
         if (streamUrl) {
           videoPlayer.src = streamUrl;
           videoPlayer.load();
           showVideoLoading(true);
 
-          videoPlayer.oncanplay = () => showVideoLoading(false);
+          videoPlayer.oncanplay = () => { showVideoLoading(false); videoPlayer.play().catch(() => {}); };
+
+          // ── Watch History Tracking ──
+          let lastWatchSave = 0;
+          videoPlayer.addEventListener('timeupdate', function() {
+            const now = Date.now();
+            if (now - lastWatchSave < 30000) return; // Save every 30 seconds
+            if (!videoPlayer.duration || videoPlayer.currentTime < 5) return;
+            
+            lastWatchSave = now;
+            
+            try {
+              const auth = JSON.parse(localStorage.getItem('bluvia_auth') || '{}');
+              const token = auth.token;
+              if (!token) return;
+              
+              const payload = {
+                drama_id: dramaId,
+                episode: currentEp,
+                position: Math.floor(videoPlayer.currentTime),
+                duration: Math.floor(videoPlayer.duration),
+                drama_title: dramaInfo ? dramaInfo.title : dramaId
+              };
+              
+              fetch('/api/user/watch-progress', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify(payload)
+              }).catch(() => {});
+            } catch(e) {}
+          });
+
           videoPlayer.onerror = () => {
             showVideoLoading(false);
             console.error('Video error:', videoPlayer.error);
@@ -418,6 +578,10 @@
         updateActiveEpisode(epNum);
         updateNavButtons();
 
+        // Refresh quality picker for new episode
+        const slugForQ = dramaId.includes('/') ? dramaId.split('/').pop() : dramaId;
+        if (typeof loadQualities === 'function') loadQualities(slugForQ, epNum);
+
         // Update URL without reload
         const url = new URL(window.location);
         url.searchParams.set('ep', epNum);
@@ -425,7 +589,7 @@
       }
 
       function updateNavButtons() {
-        const idx = episodes.findIndex(e => (e.number || e.ep) === currentEp);
+        const idx = episodes.findIndex(e => (e.number || e.ep || e.episode_number) === currentEp);
         prevBtn.disabled = idx <= 0;
         nextBtn.disabled = idx >= episodes.length - 1 || episodes.length === 0;
 
@@ -443,7 +607,7 @@
         }
 
         episodes.forEach((ep, i) => {
-          const epNum = ep.number || ep.ep || (i + 1);
+          const epNum = ep.number || ep.ep || ep.episode_number || (i + 1);
           const epTitle = ep.title || ep.name || `Episode ${epNum}`;
           const isActive = epNum === currentEp;
 
@@ -484,16 +648,16 @@
 
       // Navigation
       prevBtn.addEventListener('click', () => {
-        const idx = episodes.findIndex(e => (e.number || e.ep) === currentEp);
+        const idx = episodes.findIndex(e => (e.number || e.ep || e.episode_number) === currentEp);
         if (idx > 0) {
-          currentEpValue(episodes[idx - 1].number || episodes[idx - 1].ep);
+          currentEpValue(episodes[idx - 1].number || episodes[idx - 1].ep || episodes[idx - 1].episode_number);
         }
       });
 
       nextBtn.addEventListener('click', () => {
-        const idx = episodes.findIndex(e => (e.number || e.ep) === currentEp);
+        const idx = episodes.findIndex(e => (e.number || e.ep || e.episode_number) === currentEp);
         if (idx < episodes.length - 1) {
-          currentEpValue(episodes[idx + 1].number || episodes[idx + 1].ep);
+          currentEpValue(episodes[idx + 1].number || episodes[idx + 1].ep || episodes[idx + 1].episode_number);
         }
       });
 
