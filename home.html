@@ -1,411 +1,467 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+  <script>if(!localStorage.getItem("bluvia_auth")){window.location.replace("https://bluvia.app/")}</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Home — BLUVIA</title>
-  <link rel="stylesheet" href="css/style.css">
+  <meta name="description" content="Nonton drama Korea, Film Korea, dan Drama China favoritmu secara streaming gratis di BLUVIA.">
+  <meta property="og:title" content="BLUVIA — Nonton Drama Favorit">
+  <meta property="og:description" content="Nonton drama Korea, Film Korea, dan Drama China favoritmu secara streaming gratis.">
+  <meta property="og:type" content="website">
+  <link rel="stylesheet" href="css/style.css?v=ui-v2">
   <link rel="stylesheet" href="css/home.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%233b82f6'/><polygon points='12,8 26,16 12,24' fill='white'/></svg>">
+  <style>
+    .h-scroll:not(.genre-grid) > .poster-card { flex-shrink: 0 !important; width: 160px !important; aspect-ratio: 2/3 !important; }
+    .h-scroll > .poster-card .poster-img { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; object-fit: cover !important; }
+  </style>
+  <link rel="icon" href="img/logo-bluvia.png">
 </head>
 <body data-page="home">
 
-  <!-- ═══════════════ SIDEBAR ═══════════════ -->
-  <aside class="sidebar">
+  <!-- SIDEBAR -->
+  <!-- SIDEBAR OVERLAY (mobile) -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+  <aside class="sidebar" id="sidebar">
     <a href="home.html" class="logo">
-      <div class="logo-icon">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><polygon points="4,2 14,8 4,14" fill="white"/></svg>
-      </div>
+      <img src="img/logo-bluvia.png" alt="BLUVIA" class="logo-img" style="width:28px;height:28px;border-radius:6px;object-fit:contain">
       <span class="logo-text">BLUVIA</span>
     </a>
 
-    <!-- User Profile -->
     <div class="sidebar-profile">
-      <div class="avatar" style="background:linear-gradient(135deg,#60a5fa,#3b82f6)">
+      <div class="avatar" style="background:linear-gradient(135deg,#60a5fa,#3b82f6);width:48px;height:48px;margin:0 auto var(--space-sm)">
         <img src="https://i.pravatar.cc/80?img=12" alt="">
       </div>
-      <div class="profile-info">
-        <div class="profile-greeting">Halo, Teguh 👋</div>
-        <div class="profile-sub">Mau nonton apa hari ini?</div>
+      <div class="profile-info" style="text-align:center">
+        <div class="profile-greeting">Halo, Pengunjung 👋</div>
+        <div class="profile-sub" style="margin-top:2px">Mau nonton apa hari ini?</div>
+        <a href="login.html" style="display:inline-block;margin-top:8px;padding:0.35rem 1rem;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;font-size:0.75rem;font-weight:600;border-radius:9999px;text-decoration:none;transition:all 0.2s">Login untuk fitur lengkap</a>
       </div>
     </div>
 
-    <!-- Upgrade -->
     <div class="sidebar-upgrade">
       <div class="sidebar-upgrade-left">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        <div>
-          Upgrade ke Premium
-          <span class="sidebar-upgrade-sub">Nonton semua drama tanpa iklan</span>
-        </div>
+        <div>Upgrade ke Premium<span class="sidebar-upgrade-sub">Nonton semua drama tanpa iklan</span></div>
       </div>
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
     </div>
 
-    <!-- Menu Utama -->
     <div class="sidebar-menu-label">Menu Utama</div>
     <nav class="sidebar-menu">
-      <a href="#" class="active">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        Home
-      </a>
-      <a href="#">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-        Ongoing
-      </a>
-      <a href="#">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        Terbaru
-      </a>
-      <a href="#">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-        Daftar Suka
-      </a>
-      <a href="#">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-        Kategori
-      </a>
+      <a href="home.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home</a>
+      <a href="home.html?view=ongoing"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>Ongoing</a>
+      <a href="home.html?view=terbaru"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Terbaru</a>
+      <a href="home.html?view=favorit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Daftar Suka</a>
+      <a href="kategori.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Kategori</a>
     </nav>
 
-    <!-- Akun & Lainnya -->
     <div class="sidebar-menu-label">Akun & Lainnya</div>
     <nav class="sidebar-menu">
-      <a href="#">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        Riwayat Tonton
-      </a>
-      <a href="#">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Downloads
-      </a>
-      <a href="#">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-        Daftar Saya
-      </a>
-      <a href="#">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        Pengaturan
-      </a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Riwayat Tonton</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Downloads</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Daftar Saya</a>
+      <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Pengaturan</a>
     </nav>
 
-    <!-- Dark Mode -->
-    <div class="sidebar-toggle" style="padding: 0.55rem 0.5rem;">
-      <span style="display:flex;align-items:center;gap:0.75rem;">
+    <div class="sidebar-toggle" style="padding:0.55rem 0.5rem">
+      <span style="display:flex;align-items:center;gap:0.75rem">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         Dark Mode
       </span>
       <div class="toggle-switch" onclick="this.classList.toggle('off')"></div>
     </div>
 
-    <!-- Bottom -->
     <div class="sidebar-bottom">
       <div class="sidebar-download">
         <p>Download Aplikasi BLUVIA</p>
         <div class="sub">Nonton lebih nyaman di aplikasi</div>
         <div class="store-badges">
-          <a href="#" class="store-badge">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 20.5V3.5c0-.94.63-1.6 1.36-1.6.3 0 .58.12.82.34l13.96 8.26c.5.3.5.98 0 1.28L5.18 20.16c-.24.22-.52.34-.82.34C3.63 22.1 3 21.44 3 20.5z"/></svg>
-            Google Play
-          </a>
-          <a href="#" class="store-badge">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-            App Store
-          </a>
+          <a href="#" class="store-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 20.5V3.5c0-.94.63-1.6 1.36-1.6.3 0 .58.12.82.34l13.96 8.26c.5.3.5.98 0 1.28L5.18 20.16c-.24.22-.52.34-.82.34C3.63 22.1 3 21.44 3 20.5z"/></svg>Google Play</a>
+          <a href="#" class="store-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>App Store</a>
         </div>
       </div>
-      <p style="font-size:var(--fs-xs);color:var(--text-muted);margin-top:var(--space-lg);padding-left:var(--space-sm);">© 2025 BLUVIA. All rights reserved.</p>
+      <p style="font-size:var(--fs-xs);color:var(--text-muted);margin-top:var(--space-lg);padding-left:var(--space-sm)">© 2025 BLUVIA. All rights reserved.</p>
     </div>
   </aside>
 
-  <!-- ═══════════════ MAIN ═══════════════ -->
+  <!-- MAIN -->
   <div class="home-main">
-    <!-- Top Nav -->
     <header class="top-nav">
       <div class="top-nav-inner">
+        <button class="hamburger-btn" onclick="toggleSidebar()" aria-label="Menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
         <div class="top-nav-links">
-          <a href="#" class="active">Home</a>
-          <a href="#">Ongoing</a>
-          <a href="#">Terbaru</a>
-          <a href="#">Daftar Suka</a>
-          <a href="#">Kategori</a>
+          <a href="home.html" class="active">Home</a>
+          <a href="home.html?view=ongoing">Ongoing</a>
+          <a href="home.html?view=terbaru">Terbaru</a>
+          <a href="home.html?view=favorit">Daftar Suka</a>
+          <a href="kategori.html">Kategori</a>
         </div>
         <div class="top-nav-right">
           <div class="search-bar">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" placeholder="Cari drama favoritmu...">
+            <input type="text" placeholder="Cari drama favoritmu..." onkeydown="if(event.key==='Enter')window.location.href='/?q='+this.value">
           </div>
           <button class="notification-btn">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             <span class="notif-dot"></span>
           </button>
-          <div class="user-menu">
-            <div class="avatar" style="width:32px;height:32px;">
-              <img src="https://i.pravatar.cc/64?img=12" alt="">
-            </div>
-            <span>Teguh</span>
+          <div class="user-menu" onclick="toggleUserDropdown(event)" style="position:relative">
+            <div class="avatar" style="width:32px;height:32px"><img src="https://i.pravatar.cc/64?img=12" alt=""></div>
+            <span class="nav-user-name">Pengunjung</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            <div class="user-dropdown" id="user-dropdown" style="display:none;position:absolute;top:100%;right:0;margin-top:8px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);min-width:180px;box-shadow:0 8px 32px rgba(0,0,0,0.4);z-index:1000;overflow:hidden">
+              <a href="mylist.html" style="display:flex;align-items:center;gap:8px;padding:10px 16px;color:var(--text);text-decoration:none;font-size:var(--fs-sm);transition:background 0.15s" onmouseover="this.style.background='var(--surface-hover)'" onmouseout="this.style.background=''">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                Daftar Suka
+              </a>
+              <a href="history.html" style="display:flex;align-items:center;gap:8px;padding:10px 16px;color:var(--text);text-decoration:none;font-size:var(--fs-sm);transition:background 0.15s" onmouseover="this.style.background='var(--surface-hover)'" onmouseout="this.style.background=''">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Riwayat Nonton
+              </a>
+              <a href="settings.html" style="display:flex;align-items:center;gap:8px;padding:10px 16px;color:var(--text);text-decoration:none;font-size:var(--fs-sm);transition:background 0.15s" onmouseover="this.style.background='var(--surface-hover)'" onmouseout="this.style.background=''">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                Pengaturan
+              </a>
+              <div style="height:1px;background:var(--border);margin:4px 0"></div>
+              <a href="login.html" style="display:flex;align-items:center;gap:8px;padding:10px 16px;color:#ef4444;text-decoration:none;font-size:var(--fs-sm);transition:background 0.15s" onmouseover="this.style.background='var(--surface-hover)'" onmouseout="this.style.background=''">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Keluar
+              </a>
+            </div>
           </div>
         </div>
       </div>
     </header>
 
-    <!-- Content -->
     <div class="home-content">
       <!-- Hero Banner -->
-      <div class="home-hero">
-        <div class="hero-slide-bg"></div>
+      <div class="home-hero" id="hero-carousel">
+        <div class="hero-slide-bg" id="hero-bg"></div>
         <div class="hero-slide">
           <div class="hero-slide-left">
-            <span class="badge badge-new">NEW EPISODE</span>
-            <h2>Teach You a Lesson (2026)</h2>
-            <div class="ep-label">Episode 10</div>
-            <p class="desc">Para guru sekolah mengalami kesulitan dalam mendisiplinkan siswa dan seringkali mereka bahkan tidak dihargai.</p>
-            <div style="display:flex;gap:0.75rem;">
-              <a href="#" class="btn btn-primary">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><polygon points="4,2 14,8 4,14" fill="white"/></svg>
-                Tonton Sekarang
-              </a>
-              <a href="#" class="btn btn-outline">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                + My List
-              </a>
+            <div class="hero-content">
+              <span class="badge badge-new" id="hero-badge">NEW EPISODE</span>
+              <h2 id="hero-title">My Royal Nemesis</h2>
+              <div class="hero-year" id="hero-year">2026</div>
+              <div class="ep-meta" style="display:flex;align-items:center;gap:var(--space-md);margin-bottom:var(--space-sm);flex-wrap:wrap">
+                <div class="ep-rating" style="display:flex;align-items:center;gap:4px;font-size:var(--fs-sm);font-weight:600;color:#f59e0b"><svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> 9.2</div>
+                <div class="ep-quality" style="display:inline-flex;align-items:center;padding:0.15rem 0.5rem;background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);border-radius:var(--radius-sm);font-size:0.65rem;font-weight:700;color:var(--accent);letter-spacing:0.5px">HD</div>
+              </div>
+              <div class="ep-genres" style="display:flex;align-items:center;gap:6px;font-size:var(--fs-xs);color:var(--text-muted);margin-bottom:var(--space-sm)"><span style="color:var(--text-secondary);font-weight:500">Action</span> <span class="dot">•</span> <span style="color:var(--text-secondary);font-weight:500">Fantasy</span> <span class="dot">•</span> <span style="color:var(--text-secondary);font-weight:500">Romance</span></div>
+              <div class="ep-label" id="hero-ep">14 Episodes</div>
+              <p class="desc" id="hero-desc">Kang Dan-Sim (Lim Ji-Yeon) dikenal sebagai femme fatale paling jahat di Joseon dan ia diberi racun sesuai hukum. Ketika ia terbangun, ia mendapati dirinya berada di tahun 2026 dan dalam tubuh seorang pewaris kaya raya.</p>
             </div>
-          </div>
-          <div class="hero-slide-right">
-            <div class="hero-card">
-              <span class="badge badge-ongoing">ONGOING</span>
-              <h3>The Legend of Kitchen Soldier</h3>
-              <div class="ep-label">Episode 5</div>
-              <p class="desc">Kisah tentara elit dengan misi rahasia di dapur yang penuh bahaya.</p>
-              <a href="#" class="btn btn-primary" style="width:100%;">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><polygon points="4,2 14,8 4,14" fill="white"/></svg>
-                Tonton Sekarang
-              </a>
+            <div class="hero-actions">
+              <a href="player.html" class="btn btn-primary"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><polygon points="4,2 14,8 4,14" fill="white"/></svg> Tonton Sekarang</a>
+              <a href="#" class="btn btn-outline" onclick="this.textContent='✓ Added';this.style.background='var(--success)';this.style.borderColor='var(--success)';return false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> + My List</a>
             </div>
           </div>
         </div>
         <div class="hero-nav">
-          <button class="hero-nav-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
-          <button class="hero-nav-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
-        </div>
-        <div class="dots" style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);z-index:2;">
-          <button class="dot"></button>
-          <button class="dot active"></button>
-          <button class="dot"></button>
-          <button class="dot"></button>
-          <button class="dot"></button>
+          <button class="hero-nav-btn" onclick="heroSlide(-1)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+          <button class="hero-nav-btn" onclick="heroSlide(1)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
         </div>
       </div>
 
-      <!-- ── Lanjutkan Menonton ── -->
-      <section style="margin-top:var(--space-2xl);">
+      <!-- Lanjutkan Menonton -->
+      <section style="margin-top:var(--space-2xl)">
         <div class="section-header">
           <h2 class="section-title">Lanjutkan Menonton</h2>
-          <a href="#" class="section-link">Lihat Semua <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a>
+          <a href="home.html" class="section-link">Lihat Semua <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a>
         </div>
-        <div class="h-scroll" style="gap:var(--space-md);">
-          <div class="continue-card" style="min-width:280px;">
-            <img class="cc-poster" src="https://image.tmdb.org/t/p/w300/pBtM6R1Kim4JqEjCfGMfh2bSMLH.jpg" alt="">
+        <div class="h-scroll">
+          <div class="continue-card" onclick="window.location.href='player.html'" style="min-width:280px">
+            <div class="cc-poster-wrap">
+              <img class="cc-poster" src="https://image.tmdb.org/t/p/w300/qhb1qOilapbapxWQn9jtRCMwXJF.jpg" alt="">
+              <div class="cc-play-overlay"><svg width="36" height="36" viewBox="0 0 24 24" fill="none"><polygon points="8,5 19,12 8,19" fill="white"/></svg></div>
+            </div>
             <div class="cc-info">
               <div class="cc-title">Marry My Husband (2024)</div>
               <div class="cc-episode">Episode 8</div>
-              <div class="cc-progress-wrap">
-                <div class="cc-progress"><div class="cc-progress-fill" style="width:72%"></div></div>
-                <span class="cc-progress-pct">72%</span>
-              </div>
+              <div class="cc-progress-wrap"><div class="cc-progress"><div class="cc-progress-fill" style="width:72%"></div></div><span class="cc-progress-pct">72%</span></div>
             </div>
           </div>
-          <div class="continue-card" style="min-width:280px;">
-            <img class="cc-poster" src="https://image.tmdb.org/t/p/w300/qPnBoPfZbVnCKsVBnEh7oYfbfLV.jpg" alt="">
+          <div class="continue-card" onclick="window.location.href='player.html'" style="min-width:280px">
+            <div class="cc-poster-wrap">
+              <img class="cc-poster" src="https://image.tmdb.org/t/p/w300/9E2y5Q7WlCVNEhP5GiVTjhEhx1o.jpg" alt="">
+              <div class="cc-play-overlay"><svg width="36" height="36" viewBox="0 0 24 24" fill="none"><polygon points="8,5 19,12 8,19" fill="white"/></svg></div>
+            </div>
             <div class="cc-info">
               <div class="cc-title">Lovely Runner (2024)</div>
               <div class="cc-episode">Episode 12</div>
-              <div class="cc-progress-wrap">
-                <div class="cc-progress"><div class="cc-progress-fill" style="width:45%"></div></div>
-                <span class="cc-progress-pct">45%</span>
-              </div>
+              <div class="cc-progress-wrap"><div class="cc-progress"><div class="cc-progress-fill" style="width:45%"></div></div><span class="cc-progress-pct">45%</span></div>
             </div>
           </div>
-          <div class="continue-card" style="min-width:280px;">
-            <img class="cc-poster" src="https://image.tmdb.org/t/p/w300/mYlPi2qLKqkJNkBbVTLPDmDfKk.jpg" alt="">
+          <div class="continue-card" onclick="window.location.href='player.html'" style="min-width:280px">
+            <div class="cc-poster-wrap">
+              <img class="cc-poster" src="https://image.tmdb.org/t/p/w300/kDp1vUBnMpe8ak4rjgl3cLELqjU.jpg" alt="">
+              <div class="cc-play-overlay"><svg width="36" height="36" viewBox="0 0 24 24" fill="none"><polygon points="8,5 19,12 8,19" fill="white"/></svg></div>
+            </div>
             <div class="cc-info">
               <div class="cc-title">Queen of Tears (2024)</div>
               <div class="cc-episode">Episode 6</div>
-              <div class="cc-progress-wrap">
-                <div class="cc-progress"><div class="cc-progress-fill" style="width:68%"></div></div>
-                <span class="cc-progress-pct">68%</span>
-              </div>
+              <div class="cc-progress-wrap"><div class="cc-progress"><div class="cc-progress-fill" style="width:68%"></div></div><span class="cc-progress-pct">68%</span></div>
             </div>
           </div>
-          <div class="continue-card" style="min-width:280px;">
-            <img class="cc-poster" src="https://image.tmdb.org/t/p/w300/xCeYkFxTkG9MkL7PjbE8eRIaPvA.jpg" alt="">
+          <div class="continue-card" onclick="window.location.href='player.html'" style="min-width:280px">
+            <div class="cc-poster-wrap">
+              <img class="cc-poster" src="https://image.tmdb.org/t/p/w300/7vjaCdMw15FEbXyLQTVa04URsPm.jpg" alt="">
+              <div class="cc-play-overlay"><svg width="36" height="36" viewBox="0 0 24 24" fill="none"><polygon points="8,5 19,12 8,19" fill="white"/></svg></div>
+            </div>
             <div class="cc-info">
               <div class="cc-title">The Judge from Hell (2024)</div>
               <div class="cc-episode">Episode 10</div>
-              <div class="cc-progress-wrap">
-                <div class="cc-progress"><div class="cc-progress-fill" style="width:80%"></div></div>
-                <span class="cc-progress-pct">80%</span>
-              </div>
+              <div class="cc-progress-wrap"><div class="cc-progress"><div class="cc-progress-fill" style="width:80%"></div></div><span class="cc-progress-pct">80%</span></div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- ── Episode Baru ── -->
-      <section style="margin-top:var(--space-2xl);">
+      <!-- Populer Minggu Ini -->
+      <section style="margin-top:var(--space-2xl)">
+        <div class="section-header">
+          <h2 class="section-title">🔥 Populer Minggu Ini</h2>
+          <a href="home.html" class="section-link">Lihat Semua <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a>
+        </div>
+        <div class="h-scroll genre-grid" id="populer-scroll">
+        </div>
+      </section>
+
+      <!-- Episode Baru -->
+      <section style="margin-top:var(--space-2xl)">
         <div class="section-header">
           <h2 class="section-title">Episode Baru</h2>
-          <a href="#" class="section-link">Lihat Semua <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a>
+          <a href="home.html" class="section-link">Lihat Semua <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a>
         </div>
-        <div class="h-scroll">
-          <div class="poster-card" style="min-width:180px;">
-            <span class="poster-badge badge">Ep. 10</span>
-            <img class="poster-img" src="https://image.tmdb.org/t/p/w300/pBtM6R1Kim4JqEjCfGMfh2bSMLH.jpg" alt="">
-            <div class="poster-info">
-              <div class="poster-title">Teach You a Lesson (2026)</div>
-              <div class="poster-meta">Episode 10</div>
-            </div>
-          </div>
-          <div class="poster-card" style="min-width:180px;">
-            <span class="poster-badge badge">Ep. 5</span>
-            <img class="poster-img" src="https://image.tmdb.org/t/p/w300/qPnBoPfZbVnCKsVBnEh7oYfbfLV.jpg" alt="">
-            <div class="poster-info">
-              <div class="poster-title">The Legend of Kitchen Soldier</div>
-              <div class="poster-meta">Episode 5</div>
-            </div>
-          </div>
-          <div class="poster-card" style="min-width:180px;">
-            <span class="poster-badge badge">Ep. 6</span>
-            <img class="poster-img" src="https://image.tmdb.org/t/p/w300/mYlPi2qLKqkJNkBbVTLPDmDfKk.jpg" alt="">
-            <div class="poster-info">
-              <div class="poster-title">Doctor on the Edge (2026)</div>
-              <div class="poster-meta">Episode 6</div>
-            </div>
-          </div>
-          <div class="poster-card" style="min-width:180px;">
-            <span class="poster-badge badge">Ep. 8</span>
-            <img class="poster-img" src="https://image.tmdb.org/t/p/w300/xCeYkFxTkG9MkL7PjbE8eRIaPvA.jpg" alt="">
-            <div class="poster-info">
-              <div class="poster-title">Agent Kim Reactivated (2026)</div>
-              <div class="poster-meta">Episode 8</div>
-            </div>
-          </div>
-          <div class="poster-card" style="min-width:180px;">
-            <span class="poster-badge badge">Ep. 12</span>
-            <img class="poster-img" src="https://image.tmdb.org/t/p/w300/pBtM6R1Kim4JqEjCfGMfh2bSMLH.jpg" alt="">
-            <div class="poster-info">
-              <div class="poster-title">My Royal Nemesis (2026)</div>
-              <div class="poster-meta">Episode 12</div>
-            </div>
-          </div>
-          <div class="poster-card" style="min-width:180px;">
-            <span class="poster-badge badge">Ep. 10</span>
-            <img class="poster-img" src="https://image.tmdb.org/t/p/w300/qPnBoPfZbVnCKsVBnEh7oYfbfLV.jpg" alt="">
-            <div class="poster-info">
-              <div class="poster-title">Reborn Rookie (2026)</div>
-              <div class="poster-meta">Episode 10</div>
-            </div>
-          </div>
+        <div class="h-scroll genre-grid" id="episode-baru-scroll">
+          <div class="poster-card" onclick="window.location.href='drama.html'" style=><span class="poster-badge badge">Ep. 10</span><img class="poster-img" src="https://image.tmdb.org/t/p/w300/qhb1qOilapbapxWQn9jtRCMwXJF.jpg" alt=""><div class="poster-info"><div class="poster-title">Teach You a Lesson (2026)</div><div class="poster-meta">Episode 10</div></div></div>
+          <div class="poster-card" onclick="window.location.href='drama.html'" style=><span class="poster-badge badge">Ep. 5</span><img class="poster-img" src="https://image.tmdb.org/t/p/w300/9E2y5Q7WlCVNEhP5GiVTjhEhx1o.jpg" alt=""><div class="poster-info"><div class="poster-title">The Legend of Kitchen Soldier</div><div class="poster-meta">Episode 5</div></div></div>
+          <div class="poster-card" onclick="window.location.href='drama.html'" style=><span class="poster-badge badge">Ep. 9</span><img class="poster-img" src="https://image.tmdb.org/t/p/w300/kDp1vUBnMpe8ak4rjgl3cLELqjU.jpg" alt=""><div class="poster-info"><div class="poster-title">Doctor on the Edge (2026)</div><div class="poster-meta">Episode 9</div></div></div>
+          <div class="poster-card" onclick="window.location.href='drama.html'" style=><span class="poster-badge badge">Ep. 2</span><img class="poster-img" src="https://image.tmdb.org/t/p/w300/7vjaCdMw15FEbXyLQTVa04URsPm.jpg" alt=""><div class="poster-info"><div class="poster-title">Agent Kim Reactivated (2026)</div><div class="poster-meta">Episode 2</div></div></div>
+          <div class="poster-card" onclick="window.location.href='drama.html'" style=><span class="poster-badge badge">Ep. 12</span><img class="poster-img" src="https://image.tmdb.org/t/p/w300/qhb1qOilapbapxWQn9jtRCMwXJF.jpg" alt=""><div class="poster-info"><div class="poster-title">My Royal Nemesis (2026)</div><div class="poster-meta">Episode 12</div></div></div>
+          <div class="poster-card" onclick="window.location.href='drama.html'" style=><span class="poster-badge badge">Ep. 10</span><img class="poster-img" src="https://image.tmdb.org/t/p/w300/9E2y5Q7WlCVNEhP5GiVTjhEhx1o.jpg" alt=""><div class="poster-info"><div class="poster-title">Reborn Rookie (2026)</div><div class="poster-meta">Episode 10</div></div></div>
         </div>
       </section>
-    </div>
-  </div>
 
-  <!-- ═══════════════ RIGHT SIDEBAR ═══════════════ -->
+      <!-- Drama Korea -->
+      <section style="margin-top:var(--space-2xl)">
+        <div class="section-header">
+          <h2 class="section-title">🇰🇷 Drama Korea</h2>
+          <a href="home.html" class="section-link">Lihat Semua <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a>
+        </div>
+        <div class="h-scroll genre-grid" id="drama-korea-scroll">
+          <div class="poster-card" onclick="window.location.href='drama.html'" style=><div class="poster-rank">1</div><span class="poster-badge badge badge-new">NEW</span><img class="poster-img" src="https://image.tmdb.org/t/p/w300/qhb1qOilapbapxWQn9jtRCMwXJF.jpg" alt=""><div class="poster-info"><div class="poster-title">Teach You a Lesson (2026)</div><div class="poster-meta">Episode 10</div></div></div>
+          <div class="poster-card" onclick="window.location.href='drama.html'" style=><div class="poster-rank">2</div><img class="poster-img" src="https://image.tmdb.org/t/p/w300/9E2y5Q7WlCVNEhP5GiVTjhEhx1o.jpg" alt=""><div class="poster-info"><div class="poster-title">Reborn Rookie (2026)</div><div class="poster-meta">Episode 10</div></div></div>
+          <div class="poster-card" onclick="window.location.href='drama.html'" style=><div class="poster-rank">3</div><img class="poster-img" src="https://image.tmdb.org/t/p/w300/kDp1vUBnMpe8ak4rjgl3cLELqjU.jpg" alt=""><div class="poster-info"><div class="poster-title">Doctor on the Edge (2026)</div><div class="poster-meta">Episode 9</div></div></div>
+          <div class="poster-card" onclick="window.location.href='drama.html'" style=><div class="poster-rank">4</div><img class="poster-img" src="https://image.tmdb.org/t/p/w300/7vjaCdMw15FEbXyLQTVa04URsPm.jpg" alt=""><div class="poster-info"><div class="poster-title">Agent Kim Reactivated (2026)</div><div class="poster-meta">Episode 2</div></div></div>
+          <div class="poster-card" onclick="window.location.href='drama.html'" style=><div class="poster-rank">5</div><img class="poster-img" src="https://image.tmdb.org/t/p/w300/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg" alt=""><div class="poster-info"><div class="poster-title">My Royal Nemesis (2026)</div><div class="poster-meta">Episode 12</div></div></div>
+<div class="poster-card" onclick="window.location.href='drama.html'" style=><div class="poster-rank">6</div><img class="poster-img" src="https://image.tmdb.org/t/p/w300/qhb1qOilapbapxWQn9jtRCMwXJF.jpg" alt=""><div class="poster-info"><div class="poster-title">Queen of Tears (2024)</div><div class="poster-meta">Episode 16</div></div></div>
+          <div class="poster-card" onclick="window.location.href='drama.html'" style=><div class="poster-rank">7</div><img class="poster-img" src="https://image.tmdb.org/t/p/w300/9E2y5Q7WlCVNEhP5GiVTjhEhx1o.jpg" alt=""><div class="poster-info"><div class="poster-title">Lovely Runner (2024)</div><div class="poster-meta">Episode 16</div></div></div>
+        </div>
+      </section>
+
+      <!-- Film Korea -->
+      <section id="ranking-film-korea" style="margin-top:var(--space-2xl)">
+        <div class="section-header">
+          <h2 class="section-title">🎬 Film Korea</h2>
+          <a href="home.html" class="section-link">Lihat Semua <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a>
+        </div>
+        <div class="h-scroll genre-grid">
+          <div class="poster-card" onclick="window.location.href='drama.html'" style=><div class="poster-rank">1</div><img class="poster-img" src="https://image.tmdb.org/t/p/w300/9E2y5Q7WlCVNEhP5GiVTjhEhx1o.jpg" alt=""><div class="poster-info"><div class="poster-title">Along with the Gods (2024)</div><div class="poster-meta">Film</div></div></div>
+          <div class="poster-card" onclick="window.location.href='drama.html'" style=><div class="poster-rank">2</div><img class="poster-img" src="https://image.tmdb.org/t/p/w300/kDp1vUBnMpe8ak4rjgl3cLELqjU.jpg" alt=""><div class="poster-info"><div class="poster-title">The Roundup (2024)</div><div class="poster-meta">Film</div></div></div>
+          <div class="poster-card" onclick="window.location.href='drama.html'" style=><div class="poster-rank">3</div><img class="poster-img" src="https://image.tmdb.org/t/p/w300/7vjaCdMw15FEbXyLQTVa04URsPm.jpg" alt=""><div class="poster-info"><div class="poster-title">Exhuma (2024)</div><div class="poster-meta">Film</div></div></div>
+          <div class="poster-card" onclick="window.location.href='drama.html'" style=><div class="poster-rank">4</div><img class="poster-img" src="https://image.tmdb.org/t/p/w300/qhb1qOilapbapxWQn9jtRCMwXJF.jpg" alt=""><div class="poster-info"><div class="poster-title">Mission: Impossible 8 (2025)</div><div class="poster-meta">Film</div></div></div>
+          <div class="poster-card" onclick="window.location.href='drama.html'" style=><div class="poster-rank">5</div><img class="poster-img" src="https://image.tmdb.org/t/p/w300/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg" alt=""><div class="poster-info"><div class="poster-title">Veteran 2 (2024)</div><div class="poster-meta">Film</div></div></div>
+<div class="poster-card" onclick="window.location.href='drama.html'" style=><div class="poster-rank">6</div><img class="poster-img" src="https://image.tmdb.org/t/p/w300/kDp1vUBnMpe8ak4rjgl3cLELqjU.jpg" alt=""><div class="poster-info"><div class="poster-title">Concrete Utopia (2023)</div><div class="poster-meta">Film</div></div></div>
+          <div class="poster-card" onclick="window.location.href='drama.html'" style=><div class="poster-rank">7</div><img class="poster-img" src="https://image.tmdb.org/t/p/w300/7vjaCdMw15FEbXyLQTVa04URsPm.jpg" alt=""><div class="poster-info"><div class="poster-title">Hunt (2022)</div><div class="poster-meta">Film</div></div></div>
+        </div>
+      </section>
+
+      <!-- Drama China -->
+      <section id="ranking-drama-china" style="margin-top:var(--space-2xl)">
+        <div class="section-header">
+          <h2 class="section-title">🇨🇳 Drama China</h2>
+          <a href="home.html" class="section-link">Lihat Semua <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a>
+        </div>
+        <div class="h-scroll genre-grid">
+          <div class="poster-card" onclick="window.location.href='drama.html'" style=><div class="poster-rank">1</div><span class="poster-badge badge badge-new">NEW</span><img class="poster-img" src="https://image.tmdb.org/t/p/w300/kDp1vUBnMpe8ak4rjgl3cLELqjU.jpg" alt=""><div class="poster-info"><div class="poster-title">Joy of Life Season 2</div><div class="poster-meta">Episode 36</div></div></div>
+          <div class="poster-card" onclick="window.location.href='drama.html'" style=><div class="poster-rank">2</div><img class="poster-img" src="https://image.tmdb.org/t/p/w300/7vjaCdMw15FEbXyLQTVa04URsPm.jpg" alt=""><div class="poster-info"><div class="poster-title">The Double</div><div class="poster-meta">Episode 40</div></div></div>
+          <div class="poster-card" onclick="window.location.href='drama.html'" style=><div class="poster-rank">3</div><img class="poster-img" src="https://image.tmdb.org/t/p/w300/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg" alt=""><div class="poster-info"><div class="poster-title">Story of Kunning Palace</div><div class="poster-meta">Episode 38</div></div></div>
+          <div class="poster-card" onclick="window.location.href='drama.html'" style=><div class="poster-rank">4</div><img class="poster-img" src="https://image.tmdb.org/t/p/w300/qhb1qOilapbapxWQn9jtRCMwXJF.jpg" alt=""><div class="poster-info"><div class="poster-title">Hidden Love</div><div class="poster-meta">Episode 25</div></div></div>
+          <div class="poster-card" onclick="window.location.href='drama.html'" style=><div class="poster-rank">5</div><img class="poster-img" src="https://image.tmdb.org/t/p/w300/9E2y5Q7WlCVNEhP5GiVTjhEhx1o.jpg" alt=""><div class="poster-info"><div class="poster-title">Till the End of the Moon</div><div class="poster-meta">Episode 40</div></div></div>
+<div class="poster-card" onclick="window.location.href='drama.html'" style=><div class="poster-rank">6</div><img class="poster-img" src="https://image.tmdb.org/t/p/w300/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg" alt=""><div class="poster-info"><div class="poster-title">Love Between Fairy and Devil</div><div class="poster-meta">Episode 36</div></div></div>
+          <div class="poster-card" onclick="window.location.href='drama.html'" style=><div class="poster-rank">7</div><img class="poster-img" src="https://image.tmdb.org/t/p/w300/qhb1qOilapbapxWQn9jtRCMwXJF.jpg" alt=""><div class="poster-info"><div class="poster-title">Word of Honor</div><div class="poster-meta">Episode 36</div></div></div>
+        </div>
+      </section>
+
+      <!-- Film China -->
+      <section style="margin-top:var(--space-2xl)">
+        <div class="section-header">
+          <h2 class="section-title">🇨🇳 Film China</h2>
+          <a href="home.html" class="section-link">Lihat Semua <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a>
+        </div>
+        <div class="h-scroll genre-grid" id="film-china-scroll"></div>
+      </section>
+
+      <!-- Drama Japan -->
+      <section style="margin-top:var(--space-2xl)">
+        <div class="section-header">
+          <h2 class="section-title">🇯🇵 Drama Japan</h2>
+          <a href="home.html" class="section-link">Lihat Semua <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a>
+        </div>
+        <div class="h-scroll genre-grid" id="drama-jepang-scroll"></div>
+      </section>
+
+      <!-- Film Japan -->
+      <section style="margin-top:var(--space-2xl)">
+        <div class="section-header">
+          <h2 class="section-title">🇯🇵 Film Japan</h2>
+          <a href="home.html" class="section-link">Lihat Semua <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a>
+        </div>
+        <div class="h-scroll genre-grid" id="film-jepang-scroll"></div>
+      </section>
+      <!-- Variety Show -->
+      <section style="margin-top:var(--space-2xl)">
+        <div class="section-header">
+          <h2 class="section-title">🎭 Variety Show</h2>
+          <a href="home.html" class="section-link">Lihat Semua <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></a>
+        </div>
+        <div class="h-scroll genre-grid" id="variety-show-scroll"></div>
+      </section>
+
+      <!-- Kategori Section (drakorid.co style) -->
+      <section id="kategori" style="margin-top:var(--space-2xl);">
+        <div class="section-header">
+          <h2 class="section-title">Kategori</h2>
+        </div>
+        <div class="kategori-grid">
+          <a href="home.html" class="kategori-card">
+            <div class="kategori-icon">🎬</div>
+            <div class="kategori-name">Drama Korea</div>
+          </a>
+          <a href="home.html" class="kategori-card">
+            <div class="kategori-icon">🎥</div>
+            <div class="kategori-name">Film Korea</div>
+          </a>
+          <a href="home.html" class="kategori-card">
+            <div class="kategori-icon">🇨🇳</div>
+            <div class="kategori-name">Drama China</div>
+          </a>
+          <a href="home.html" class="kategori-card">
+            <div class="kategori-icon">💕</div>
+            <div class="kategori-name">Romance</div>
+          </a>
+          <a href="home.html" class="kategori-card">
+            <div class="kategori-icon">😂</div>
+            <div class="kategori-name">Comedy</div>
+          </a>
+          <a href="home.html" class="kategori-card">
+            <div class="kategori-icon">😱</div>
+            <div class="kategori-name">Thriller</div>
+          </a>
+          <a href="home.html" class="kategori-card">
+            <div class="kategori-icon">⚔️</div>
+            <div class="kategori-name">Action</div>
+          </a>
+          <a href="home.html" class="kategori-card">
+            <div class="kategori-icon">✨</div>
+            <div class="kategori-name">Fantasy</div>
+          </a>
+          <a href="home.html" class="kategori-card">
+            <div class="kategori-icon">🏥</div>
+            <div class="kategori-name">Medical</div>
+          </a>
+          <a href="home.html" class="kategori-card">
+            <div class="kategori-icon">👨‍👩‍👧</div>
+            <div class="kategori-name">Family</div>
+          </a>
+          <a href="home.html" class="kategori-card">
+            <div class="kategori-icon">🔍</div>
+            <div class="kategori-name">Mystery</div>
+          </a>
+          <a href="home.html" class="kategori-card">
+            <div class="kategori-icon">🎭</div>
+            <div class="kategori-name">Melodrama</div>
+          </a>
+        </div>
+      </section>
+
+    </div>
+
+  <!-- RIGHT SIDEBAR -->
   <div class="home-aside">
-    <!-- Populer Minggu Ini -->
     <div class="ranking-card">
       <div class="section-header">
-        <h3 class="section-title" style="font-size:var(--fs-md);">Populer Minggu Ini</h3>
-        <a href="#" class="section-link">Lihat Semua</a>
+        <h3 class="section-title" style="font-size:var(--fs-md)">Populer Minggu Ini</h3>
+        <a href="home.html" class="section-link">Lihat Semua</a>
       </div>
-      <div class="ranking-item">
-        <div class="ranking-num top1">1</div>
-        <img class="ranking-thumb" src="https://image.tmdb.org/t/p/w100/pBtM6R1Kim4JqEjCfGMfh2bSMLH.jpg" alt="">
-        <div class="ranking-info">
-          <div class="ranking-title">Teach You a Lesson (2026)</div>
-          <div class="ranking-ep">Episode 10</div>
-        </div>
-      </div>
-      <div class="ranking-item">
-        <div class="ranking-num top2">2</div>
-        <img class="ranking-thumb" src="https://image.tmdb.org/t/p/w100/qPnBoPfZbVnCKsVBnEh7oYfbfLV.jpg" alt="">
-        <div class="ranking-info">
-          <div class="ranking-title">Reborn Rookie (2026)</div>
-          <div class="ranking-ep">Episode 10</div>
-        </div>
-      </div>
-      <div class="ranking-item">
-        <div class="ranking-num top3">3</div>
-        <img class="ranking-thumb" src="https://image.tmdb.org/t/p/w100/mYlPi2qLKqkJNkBbVTLPDmDfKk.jpg" alt="">
-        <div class="ranking-info">
-          <div class="ranking-title">Doctor on the Edge (2026)</div>
-          <div class="ranking-ep">Episode 6</div>
-        </div>
-      </div>
-      <div class="ranking-item">
-        <div class="ranking-num other">6</div>
-        <img class="ranking-thumb" src="https://image.tmdb.org/t/p/w100/xCeYkFxTkG9MkL7PjbE8eRIaPvA.jpg" alt="">
-        <div class="ranking-info">
-          <div class="ranking-title">Agent Kim Reactivated (2026)</div>
-          <div class="ranking-ep">Episode 8</div>
-        </div>
-      </div>
-      <div class="ranking-item">
-        <div class="ranking-num other">5</div>
-        <img class="ranking-thumb" src="https://image.tmdb.org/t/p/w100/pBtM6R1Kim4JqEjCfGMfh2bSMLH.jpg" alt="">
-        <div class="ranking-info">
-          <div class="ranking-title">My Royal Nemesis (2026)</div>
-          <div class="ranking-ep">Episode 12</div>
-        </div>
-      </div>
+      <div class="ranking-item" onclick="window.location.href='drama.html'" style="cursor:pointer"><div class="ranking-num top1">1</div><img class="ranking-thumb" src="https://image.tmdb.org/t/p/w100/qhb1qOilapbapxWQn9jtRCMwXJF.jpg" alt=""><div class="ranking-info"><div class="ranking-title">My Royal Nemesis</div><div class="ranking-ep">14 episodes</div></div></div>
+      <div class="ranking-item" onclick="window.location.href='drama.html'" style="cursor:pointer"><div class="ranking-num top2">2</div><img class="ranking-thumb" src="https://image.tmdb.org/t/p/w100/9E2y5Q7WlCVNEhP5GiVTjhEhx1o.jpg" alt=""><div class="ranking-info"><div class="ranking-title">Reborn Rookie</div><div class="ranking-ep">10 episodes</div></div></div>
+      <div class="ranking-item" onclick="window.location.href='drama.html'" style="cursor:pointer"><div class="ranking-num top3">3</div><img class="ranking-thumb" src="https://image.tmdb.org/t/p/w100/kDp1vUBnMpe8ak4rjgl3cLELqjU.jpg" alt=""><div class="ranking-info"><div class="ranking-title">The Legend of Kit...</div><div class="ranking-ep">5 episodes</div></div></div>
+      <div class="ranking-item" onclick="window.location.href='drama.html'" style="cursor:pointer"><div class="ranking-num other">4</div><img class="ranking-thumb" src="https://image.tmdb.org/t/p/w100/7vjaCdMw15FEbXyLQTVa04URsPm.jpg" alt=""><div class="ranking-info"><div class="ranking-title">Doctor on the Edge</div><div class="ranking-ep">9 episodes</div></div></div>
+      <div class="ranking-item" onclick="window.location.href='drama.html'" style="cursor:pointer"><div class="ranking-num other">5</div><img class="ranking-thumb" src="https://image.tmdb.org/t/p/w100/qhb1qOilapbapxWQn9jtRCMwXJF.jpg" alt=""><div class="ranking-info"><div class="ranking-title">The WONDERfools</div><div class="ranking-ep">8 episodes</div></div></div>
     </div>
 
-    <!-- Premium Ad -->
     <div class="premium-ad">
       <h3>Nonton Tanpa Iklan,<br>Kualitas HD</h3>
       <p>Akses semua drama, update tercepat, subtitle lengkap, tonton di semua perangkat.</p>
       <div class="premium-features">
-        <div class="premium-feat">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-          Akses semua drama
-        </div>
-        <div class="premium-feat">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-          Update tercepat
-        </div>
-        <div class="premium-feat">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-          Subtitle lengkap
-        </div>
-        <div class="premium-feat">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-          Tonton di semua perangkat
-        </div>
+        <div class="premium-feat"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Full HD</div>
+        <div class="premium-feat"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Download Offline</div>
+        <div class="premium-feat"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Subtitle Lengkap</div>
       </div>
-      <a href="#" class="btn btn-primary" style="width:100%;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        Upgrade Premium
-      </a>
-      <p style="font-size:var(--fs-xs);color:var(--text-muted);text-align:center;margin-top:var(--space-sm);">Mulai dari Rp 25.000 / bulan</p>
+      <div class="premium-price">
+        <span class="price-label">Mulai dari</span>
+        <span class="price-value">Rp25.000/bln</span>
+      </div>
+      <a href="#" class="btn btn-primary" style="width:100%"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Upgrade Premium</a>
     </div>
 
-    <!-- Download -->
     <div class="download-ad">
       <h3>Aplikasi BLUVIA</h3>
       <p>Nonton lebih nyaman di aplikasi</p>
       <div class="qr-placeholder">QR Code</div>
-      <p style="font-size:var(--fs-xs);color:var(--text-muted);">Scan untuk download</p>
+      <p style="font-size:var(--fs-xs);color:var(--text-muted)">Scan untuk download</p>
     </div>
   </div>
 
   <!-- Chat Widget -->
-  <div style="position:fixed;bottom:24px;right:24px;z-index:200;">
-    <button style="width:56px;height:56px;border-radius:var(--radius-full);background:var(--accent);border:none;color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px var(--accent-glow);cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+  <div style="position:fixed;bottom:24px;right:24px;z-index:200">
+    <button style="width:56px;height:56px;border-radius:var(--radius-full);background:var(--accent);border:none;color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px var(--accent-glow);cursor:pointer;transition:transform 0.2s" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
     </button>
   </div>
 
-  <script src="js/site-api.js"></script>
+  <script>
+    function toggleUserDropdown(e) {
+      e.stopPropagation();
+      const dd = document.getElementById('user-dropdown');
+      if (!dd) return;
+      const isVisible = dd.style.display === 'block';
+      dd.style.display = isVisible ? 'none' : 'block';
+      // Close on outside click
+      if (!isVisible) {
+        setTimeout(() => {
+          document.addEventListener('click', function closeDD() {
+            dd.style.display = 'none';
+            document.removeEventListener('click', closeDD);
+          });
+        }, 0);
+      }
+    }
+  </script>
+  <script src="js/site-api.js?v=1783074935?v=2"></script>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('sidebar-overlay').classList.toggle('active');
+      document.body.classList.toggle('sidebar-open');
+    }
+  </script>
 </body>
 </html>
