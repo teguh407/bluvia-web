@@ -702,6 +702,10 @@ async function initLanding() {
 
 // ── Home Page (After Login) ──
 async function initHome() {
+  // Check for search query first
+  const isSearch = await initSearchResults();
+  if (isSearch) return;
+
   // Single API call for all home data
   const home = await api('/api/home');
   if (!home) return;
