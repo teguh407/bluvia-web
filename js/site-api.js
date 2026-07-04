@@ -465,11 +465,11 @@ const query = getUrlParam('q') || getUrlParam('search');
         Kembali
       </a>
     </div>
-    <div class="h-scroll" style="display:flex;flex-wrap:wrap;gap:var(--space-md);"></div>
+    <div class="search-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:var(--space-md);"></div>
   `;
   mainContent.appendChild(section);
 
-  const grid = section.querySelector('.h-scroll');
+  const grid = section.querySelector('.search-grid');
   if (grid) {
     grid.style.flexWrap = 'wrap';
 
@@ -482,7 +482,7 @@ const query = getUrlParam('q') || getUrlParam('search');
       const title = d.title || cleanTitle(d.id || '');
       const card = document.createElement('div');
       card.className = 'poster-card';
-      card.style.minWidth = '180px';
+      
       card.style.cursor = 'pointer';
       card.dataset.dramaId = d.id || '';
       card.innerHTML = `
@@ -611,7 +611,7 @@ async function initLanding() {
       const title = d.title || '';
       const card = document.createElement('div');
       card.className = 'poster-card';
-      card.style.minWidth = '180px';
+      
       card.innerHTML = `
         <span class="poster-badge badge">${d.episode_count || d.total_episodes || 'New'}</span>
         <img class="poster-img" src="${d.poster_url || posterUrl(d)}" alt="${title}" onerror="this.style.background='var(--bg-secondary)'">
