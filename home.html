@@ -158,7 +158,7 @@
             </div>
             <div class="hero-actions">
               <a href="player.html" class="btn btn-primary"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><polygon points="4,2 14,8 4,14" fill="white"/></svg> Tonton Sekarang</a>
-              <a href="#" class="btn btn-outline" onclick="this.textContent='✓ Added';this.style.background='var(--success)';this.style.borderColor='var(--success)';return false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> + My List</a>
+              <a href="#" class="btn btn-outline" onclick="if(!localStorage.getItem('bluvia_user')){window.location.href='login.html';return false;}this.textContent='✓ Added';this.style.background='var(--success)';this.style.borderColor='var(--success)';return false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> + My List</a>
             </div>
           </div>
         </div>

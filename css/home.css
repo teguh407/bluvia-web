@@ -271,6 +271,9 @@ body.sidebar-open { overflow: hidden; }
   font-size: var(--fs-sm); color: var(--text-secondary); line-height: 1.7;
   max-width: 420px; margin-bottom: var(--space-xl);
 }
+.hero-actions {
+  display: flex; gap: var(--space-sm); margin-top: var(--space-sm); flex-wrap: wrap;
+}
 .hero-slide-right {
   position: relative; z-index: 1;
   display: flex; align-items: center; justify-content: center;
@@ -410,7 +413,7 @@ body.sidebar-open { overflow: hidden; }
   .home-content { padding: var(--space-sm); }
   .section-title { font-size: var(--fs-md); }
   .hero-slide-left .hero-content h2 { font-size: 1.1rem; }
-  .hero-slide-left .hero-actions { bottom: 52px; left: 50%; transform: translateX(-50%); gap: 0.5rem; }
+  .hero-actions { justify-content: center !important; margin-top: var(--space-md) !important; }
   .hero-slide-left .hero-actions .btn { padding: 0.5rem 0.85rem; font-size: var(--fs-xs); }
   .h-scroll { padding-left: var(--space-sm); padding-right: var(--space-sm); }
 }
