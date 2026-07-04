@@ -75,6 +75,10 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         Back to Site
       </a>
+      <a href="#" onclick="adminLogout()" style="color:#ef4444;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Logout
+      </a>
     </div>
   </aside>
 
@@ -590,7 +594,29 @@ document.querySelectorAll('.admin-nav a[data-page]').forEach(link => {
   });
 });
 
+// ── Auth Check & Logout ──
+function adminLogout() {
+  sessionStorage.removeItem('bluvia_admin_auth');
+  window.location.href = 'login.html';
+}
+
+// Check auth on load
+(function() {
+  const auth = sessionStorage.getItem('bluvia_admin_auth');
+  if (!auth) {
+    // Prompt for password
+    const pass = prompt('Masukkan password admin:');
+    if (pass === 'bluvia2026') {
+      sessionStorage.setItem('bluvia_admin_auth', 'true');
+    } else {
+      alert('Password salah! Mengarahkan ke halaman login.');
+      window.location.href = 'login.html';
+    }
+  }
+})();
+
 // Charts and data are loaded by js/admin-api.js via API
 </script>
 </body>
 </html>
+
