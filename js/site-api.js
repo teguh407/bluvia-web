@@ -7,7 +7,7 @@
   if(document.getElementById('bluvia-link-css')) return;
   const s=document.createElement('style');
   s.id='bluvia-link-css';
-  s.textContent=`.poster-card{text-decoration:none;color:inherit;position:relative}.poster-card>a[href]{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;text-decoration:none;color:inherit;pointer-events:auto}.poster-card img{pointer-events:none}.ranking-item{text-decoration:none;color:inherit;display:flex;align-items:center;gap:0.75rem;padding:0.5rem;border-radius:var(--radius-md);transition:background 0.2s}.ranking-item:hover{background:rgba(255,255,255,0.05)}.ranking-item img{pointer-events:none}`;
+  s.textContent=`.poster-card{text-decoration:none;color:inherit;position:relative}.poster-card>a[href]{display:flex;flex-direction:column;text-decoration:none;color:inherit}.poster-card img{pointer-events:none}.ranking-item{text-decoration:none;color:inherit;display:flex;align-items:center;gap:0.75rem;padding:0.5rem;border-radius:var(--radius-md);transition:background 0.2s}.ranking-item:hover{background:rgba(255,255,255,0.05)}.ranking-item img{pointer-events:none}`;
   document.head.appendChild(s);
 })();
 
@@ -75,20 +75,25 @@ function makeDramaClickable(element, drama) {
     return;
   }
 
-  // For <div> cards: create <a> wrapper inside (covers full card area)
-  // This works both before AND after DOM append
+  // Convert <div> to <a> — replace element in parent, move all children
   const link = document.createElement('a');
   link.href = href;
-  link.style.cssText = 'position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;text-decoration:none;color:inherit';
-  // Move all children into the link
+  link.className = element.className;
+  link.style.cssText = element.style.cssText;
+  link.style.textDecoration = 'none';
+  link.style.color = 'inherit';
+  // Move all attributes
+  for (const attr of element.attributes) {
+    if (attr.name !== 'class' && attr.name !== 'style') {
+      link.setAttribute(attr.name, attr.value);
+    }
+  }
+  // Move children
   while (element.firstChild) link.appendChild(element.firstChild);
-  element.appendChild(link);
-  element.style.position = 'relative';
-  // Click handler
-  element.addEventListener('click', (e) => {
-    e.preventDefault();
-    if (dramaId) window.location.href = `/drama/${dramaId}`;
-  });
+  // Replace in parent
+  if (element.parentNode) {
+    element.parentNode.replaceChild(link, element);
+  }
 }
 
 // ── Navigation Setup ──
@@ -617,9 +622,10 @@ async function initLanding() {
       grid.innerHTML = '';
       dramas.forEach((d, i) => {
         const title = d.title || cleanTitle(d.id || '');
-        const card = document.createElement('div');
+        const card = document.createElement('a');
         card.className = 'poster-card';
-        card.style.cursor = 'pointer';
+        card.style.textDecoration = 'none';
+        card.style.color = 'inherit';
         card.innerHTML = `
           <div class="poster-rank">${i + 1}</div>
           ${i === 0 ? '<span class="poster-badge badge badge-new">NEW</span>' : ''}
@@ -629,7 +635,8 @@ async function initLanding() {
             <div class="poster-meta">${d.episode_count || d.year || ''}</div>
           </div>
         `;
-        makeDramaClickable(card, d);
+        const did = d.id || (d.category && d.slug ? d.category + '/' + d.slug : d.slug || '');
+        card.href = did ? '/drama/' + did : '#';
         grid.appendChild(card);
       });
     }
@@ -642,9 +649,10 @@ async function initLanding() {
       container.innerHTML = '';
       trending.slice(0, 7).forEach((d, i) => {
         const title = d.title || cleanTitle(d.id || '');
-        const card = document.createElement('div');
+        const card = document.createElement('a');
         card.className = 'poster-card';
-        card.style.cursor = 'pointer';
+        card.style.textDecoration = 'none';
+        card.style.color = 'inherit';
         card.innerHTML = `
           <div class="poster-rank">${i + 1}</div>
           ${i === 0 ? '<span class="poster-badge badge badge-new">NEW</span>' : ''}
@@ -654,7 +662,8 @@ async function initLanding() {
             <div class="poster-meta">${d.episode_count || ''} episodes</div>
           </div>
         `;
-        makeDramaClickable(card, d);
+        const did = d.id || (d.category && d.slug ? d.category + '/' + d.slug : d.slug || '');
+        card.href = did ? '/drama/' + did : '#';
         container.appendChild(card);
       });
     }
@@ -666,7 +675,7 @@ async function initLanding() {
     const merged = [...streamable, ...recently].slice(0, 7);
     merged.forEach(d => {
       const title = d.title || '';
-      const card = document.createElement('div');
+      const card = document.createElement('a');
       card.className = 'poster-card';
       
       card.innerHTML = `
@@ -677,7 +686,8 @@ async function initLanding() {
           <div class="poster-meta">${d.year || ''}</div>
         </div>
       `;
-      makeDramaClickable(card, d);
+      const did = d.id || (d.category && d.slug ? d.category + '/' + d.slug : d.slug || '');
+      card.href = did ? '/drama/' + did : '#';
       epBaruScroll.appendChild(card);
     });
   }
@@ -693,9 +703,10 @@ async function initLanding() {
       grid.innerHTML = '';
       dramas.forEach((d, i) => {
         const title = d.title || cleanTitle(d.id || '');
-        const card = document.createElement('div');
+        const card = document.createElement('a');
         card.className = 'poster-card';
-        card.style.cursor = 'pointer';
+        card.style.textDecoration = 'none';
+        card.style.color = 'inherit';
         card.innerHTML = `
           <div class="poster-rank">${i + 1}</div>
           <img class="poster-img" src="${posterUrl(d)}" alt="${title}" onerror="this.style.background='var(--bg-secondary)'">
@@ -704,7 +715,8 @@ async function initLanding() {
             <div class="poster-meta">${d.year || ''} · ${d.episode_count || 'Film'}</div>
           </div>
         `;
-        makeDramaClickable(card, d);
+        const did = d.id || (d.category && d.slug ? d.category + '/' + d.slug : d.slug || '');
+        card.href = did ? '/drama/' + did : '#';
         grid.appendChild(card);
       });
     }
@@ -716,7 +728,7 @@ async function initLanding() {
     dkSection.innerHTML = '';
     dkDramas.slice(0, 7).forEach(d => {
       const title = d.title || '';
-      const card = document.createElement('div');
+      const card = document.createElement('a');
       card.className = 'poster-card';
       card.innerHTML = `
         <img class="poster-img" src="${d.poster_url || ''}" alt="${title}" onerror="this.style.background='var(--bg-secondary)'">
@@ -725,8 +737,10 @@ async function initLanding() {
           <div class="poster-meta">${d.year || ''} · ${d.total_episodes || '?'} eps${d.has_streaming ? ' · ▶' : ''}</div>
         </div>
       `;
-      card.style.cursor = 'pointer';
-      makeDramaClickable(card, d);
+        card.style.textDecoration = 'none';
+        card.style.color = 'inherit';
+      const did = d.id || (d.category && d.slug ? d.category + '/' + d.slug : d.slug || '');
+      card.href = did ? '/drama/' + did : '#';
       dkSection.appendChild(card);
     });
   }
@@ -980,9 +994,10 @@ async function initHome() {
     fkScroll.innerHTML = '';
     fkDramas.slice(0, 7).forEach((d, i) => {
       const title = d.title || '';
-      const card = document.createElement('div');
+      const card = document.createElement('a');
       card.className = 'poster-card';
-      card.style.cursor = 'pointer';
+        card.style.textDecoration = 'none';
+        card.style.color = 'inherit';
       card.innerHTML = `
         <div class="poster-rank">${i + 1}</div>
         <img class="poster-img" src="${d.poster_url || ''}" alt="${title}" onerror="this.style.background='var(--bg-secondary)'">
@@ -991,7 +1006,8 @@ async function initHome() {
           <div class="poster-meta">${d.year || ''} · Film</div>
         </div>
       `;
-      makeDramaClickable(card, d);
+      const did = d.id || (d.category && d.slug ? d.category + '/' + d.slug : d.slug || '');
+      card.href = did ? '/drama/' + did : '#';
       fkScroll.appendChild(card);
     });
   }
@@ -1004,7 +1020,7 @@ async function initHome() {
       trendingDramas.slice(0, 7).forEach((d, i) => {
         const title = d.title || '';
         const epCount = d.total_episodes || d.episode_count || d.episode || d.episodes || '';
-        const card = document.createElement('div');
+        const card = document.createElement('a');
         card.className = 'poster-card';
         card.innerHTML = `
           <div class="poster-rank">${i + 1}</div>
@@ -1014,7 +1030,8 @@ async function initHome() {
             <div class="poster-meta">${d.year || ''}${epCount ? ' · ' + epCount + ' eps' : ''}</div>
           </div>
         `;
-        makeDramaClickable(card, d);
+        const did = d.id || (d.category && d.slug ? d.category + '/' + d.slug : d.slug || '');
+        card.href = did ? '/drama/' + did : '#';
         trendingScroll.appendChild(card);
       });
     }
@@ -1026,9 +1043,10 @@ async function initHome() {
     dcScroll.innerHTML = '';
     dcDramas.slice(0, 7).forEach((d, i) => {
       const title = d.title || '';
-      const card = document.createElement('div');
+      const card = document.createElement('a');
       card.className = 'poster-card';
-      card.style.cursor = 'pointer';
+        card.style.textDecoration = 'none';
+        card.style.color = 'inherit';
       card.innerHTML = `
         <div class="poster-rank">${i + 1}</div>
         <img class="poster-img" src="${d.poster_url || ''}" alt="${title}" onerror="this.style.background='var(--bg-secondary)'">
@@ -1037,7 +1055,8 @@ async function initHome() {
           <div class="poster-meta">${d.year || ''} · ${d.total_episodes || '?'} eps</div>
         </div>
       `;
-      makeDramaClickable(card, d);
+      const did = d.id || (d.category && d.slug ? d.category + '/' + d.slug : d.slug || '');
+      card.href = did ? '/drama/' + did : '#';
       dcScroll.appendChild(card);
     });
   }
