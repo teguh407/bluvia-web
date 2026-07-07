@@ -7,7 +7,7 @@
   if(document.getElementById('bluvia-link-css')) return;
   const s=document.createElement('style');
   s.id='bluvia-link-css';
-  s.textContent=`.poster-card{text-decoration:none;color:inherit;position:relative}.poster-card>a[href]{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;text-decoration:none;color:inherit;pointer-events:auto}.poster-card>a[href] img{pointer-events:none}`;
+  s.textContent=`.poster-card{text-decoration:none;color:inherit;position:relative}.poster-card>a[href]{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;text-decoration:none;color:inherit;pointer-events:auto}.poster-card img{pointer-events:none}.ranking-item{text-decoration:none;color:inherit;display:flex;align-items:center;gap:0.75rem;padding:0.5rem;border-radius:var(--radius-md);transition:background 0.2s}.ranking-item:hover{background:rgba(255,255,255,0.05)}.ranking-item img{pointer-events:none}`;
   document.head.appendChild(s);
 })();
 
@@ -540,9 +540,10 @@ async function ensureSidebarRanking() {
     trending.forEach((d, i) => {
       const title = d.title || '';
       const numClass = i === 0 ? 'top1' : i === 1 ? 'top2' : i === 2 ? 'top3' : 'other';
-      const item = document.createElement('div');
+      const did = d.id || (d.category && d.slug ? d.category + '/' + d.slug : d.slug || '');
+      const item = document.createElement('a');
       item.className = 'ranking-item';
-      item.style.cursor = 'pointer';
+      item.href = did ? '/drama/' + did : '#';
       item.innerHTML = `
         <div class="ranking-num ${numClass}">${i + 1}</div>
         <img class="ranking-thumb" src="${posterUrl(d)}" alt="${title}" onerror="this.style.background='var(--bg-secondary)'">
@@ -550,9 +551,7 @@ async function ensureSidebarRanking() {
           <div class="ranking-title">${title}</div>
           <div class="ranking-ep">${d.episode_count || d.total_episodes || ''} episodes</div>
         </div>
-      `;
-      makeDramaClickable(item, d);
-      rankingCard.appendChild(item);
+      `;      rankingCard.appendChild(item);
     });
   } catch(e) { console.warn('Sidebar ranking load failed:', e); }
 }
@@ -740,9 +739,10 @@ async function initLanding() {
       trending.slice(0, 5).forEach((d, i) => {
         const title = d.title || cleanTitle(d.id || '');
         const numClass = i === 0 ? 'top1' : i === 1 ? 'top2' : i === 2 ? 'top3' : 'other';
-        const item = document.createElement('div');
+        const did = d.id || (d.category && d.slug ? d.category + '/' + d.slug : d.slug || '');
+        const item = document.createElement('a');
         item.className = 'ranking-item';
-        item.style.cursor = 'pointer';
+        item.href = did ? '/drama/' + did : '#';
         item.innerHTML = `
           <div class="ranking-num ${numClass}">${i + 1}</div>
           <img class="ranking-thumb" src="${posterUrl(d)}" alt="${title}" onerror="this.style.background='var(--bg-secondary)'">
@@ -750,9 +750,7 @@ async function initLanding() {
             <div class="ranking-title">${title}</div>
             <div class="ranking-ep">${d.episode_count || ''} episodes</div>
           </div>
-        `;
-        makeDramaClickable(item, d);
-        rankingCard.appendChild(item);
+        `;        rankingCard.appendChild(item);
       });
     }
   }
@@ -861,9 +859,10 @@ function updateSidebarRanking(dramas) {
   dramas.forEach((d, i) => {
     const title = d.title || '';
     const numClass = i === 0 ? 'top1' : i === 1 ? 'top2' : i === 2 ? 'top3' : 'other';
-    const item = document.createElement('div');
+    const did = d.id || (d.category && d.slug ? d.category + '/' + d.slug : d.slug || '');
+    const item = document.createElement('a');
     item.className = 'ranking-item';
-    item.style.cursor = 'pointer';
+    item.href = did ? '/drama/' + did : '#';
     item.innerHTML = `
       <div class="ranking-num ${numClass}">${i + 1}</div>
       <img class="ranking-thumb" src="${d.poster_url || posterUrl(d)}" alt="${title}" onerror="this.style.background='var(--bg-secondary)'">
@@ -871,9 +870,7 @@ function updateSidebarRanking(dramas) {
         <div class="ranking-title">${title}</div>
         <div class="ranking-ep">${d.total_episodes || d.episode_count || ''} episodes</div>
       </div>
-    `;
-    makeDramaClickable(item, d);
-    rankingCard.appendChild(item);
+    `;    rankingCard.appendChild(item);
   });
 }
 
@@ -1052,9 +1049,10 @@ async function initHome() {
     dkDramas.slice(0, 5).forEach((d, i) => {
       const title = d.title || '';
       const numClass = i === 0 ? 'top1' : i === 1 ? 'top2' : i === 2 ? 'top3' : 'other';
-      const item = document.createElement('div');
+      const did = d.id || (d.category && d.slug ? d.category + '/' + d.slug : d.slug || '');
+      const item = document.createElement('a');
       item.className = 'ranking-item';
-      item.style.cursor = 'pointer';
+      item.href = did ? '/drama/' + did : '#';
       item.innerHTML = `
         <div class="ranking-num ${numClass}">${i + 1}</div>
         <img class="ranking-thumb" src="${d.poster_url || ''}" alt="${title}" onerror="this.style.background='var(--bg-secondary)'">
@@ -1062,9 +1060,7 @@ async function initHome() {
           <div class="ranking-title">${title}</div>
           <div class="ranking-ep">${d.total_episodes || '?'} episodes</div>
         </div>
-      `;
-      makeDramaClickable(item, d);
-      rankingCard.appendChild(item);
+      `;      rankingCard.appendChild(item);
     });
   }
 
