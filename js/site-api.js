@@ -2,6 +2,15 @@
    BLUVIA Site — API Integration
    ======================================== */
 
+// Inject poster-card link CSS — makes <a> wrapper fill entire card for right-click support
+(function(){
+  if(document.getElementById('bluvia-link-css')) return;
+  const s=document.createElement('style');
+  s.id='bluvia-link-css';
+  s.textContent=`.poster-card{position:relative}.poster-card>a[href]{position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;text-decoration:none;color:inherit}`;
+  document.head.appendChild(s);
+})();
+
 const API_BASE = '';  // Same origin — nginx proxies /api/ to backend
 
 // ── Toast Notification ──
@@ -61,7 +70,7 @@ function makeDramaClickable(element, drama) {
   // Wrap inner HTML with <a> tag for right-click "Open in new tab"
   const link = document.createElement('a');
   link.href = dramaId ? `/drama/${dramaId}` : '#';
-  link.style.cssText = 'color:inherit;text-decoration:none;display:flex;align-items:center;gap:inherit;width:100%;';
+  link.style.cssText = 'position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;color:inherit;text-decoration:none';
   // Move all children into the link
   while (element.firstChild) {
     link.appendChild(element.firstChild);
@@ -157,8 +166,8 @@ function initNavigation() {
       if (!card.querySelector('a')) {
         const title = titleEl.textContent.trim();
         const link = document.createElement('a');
-        link.href = title ? `/drama/drama-korea/${encodeURIComponent(title)}` : '#';
-        link.style.cssText = 'color:inherit;text-decoration:none;display:flex;align-items:center;gap:inherit;width:100%;';
+        link.href = '#';
+        link.style.cssText = 'position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;color:inherit;text-decoration:none';
         while (card.firstChild) link.appendChild(card.firstChild);
         card.appendChild(link);
       }
@@ -166,7 +175,7 @@ function initNavigation() {
         if (card.dataset.dramaId) return;
         const title = titleEl.textContent.trim();
         if (title) {
-          window.location.href = `/drama/drama-korea/${encodeURIComponent(title)}`;
+          if (card.dataset.dramaId) window.location.href = '/drama/' + card.dataset.dramaId;
         }
       });
     }
@@ -182,7 +191,7 @@ function initNavigation() {
         if (item.dataset.dramaId) return;
         const title = titleEl.textContent.trim();
         if (title) {
-          window.location.href = `/drama/drama-korea/${encodeURIComponent(title)}`;
+          if (card.dataset.dramaId) window.location.href = '/drama/' + card.dataset.dramaId;
         }
       });
     }
@@ -201,7 +210,7 @@ function initNavigation() {
           const match = epEl.textContent.match(/(\d+)/);
           if (match) ep = parseInt(match[1]);
         }
-        window.location.href = `/play/${title}?ep=${ep}`;
+        const slug = card.dataset.dramaId ? (card.dataset.dramaId.includes("/") ? card.dataset.dramaId.split("/").pop() : card.dataset.dramaId) : encodeURIComponent(title); window.location.href = `/play/${slug}?ep=${ep}`;
       }
     });
   });
@@ -336,7 +345,7 @@ async function loadHeroData() {
         year: d.year || '',
         ep: d.total_episodes ? d.total_episodes + ' Episodes' : (d.episode_count ? d.episode_count + ' Episodes' : ''),
         desc: d.synopsis || '',
-        bg: d.poster_url || '',
+        bg: d.hero_image || (d.poster_url || '').replace(/\/\d+x\d+\//, '/1500x1080/'),
         dramaId: d.id || d.slug || '',
         slug: d.slug || '',
         category: d.category || 'drama-korea'
@@ -367,7 +376,7 @@ function renderHero() {
   const desc = document.getElementById('hero-desc');
   const watchBtn = document.getElementById('hero-watch-btn');
   if (!bg) return;
-  bg.style.background = `linear-gradient(90deg, rgba(8,12,24,0.95) 0%, rgba(8,12,24,0.6) 60%, rgba(8,12,24,0.2) 100%), url('${d.bg}') center/cover`;
+  bg.style.background = `linear-gradient(90deg, rgba(8,12,24,0.95) 0%, rgba(8,12,24,0.6) 60%, rgba(8,12,24,0.2) 100%), url('${d.bg}') right center/100% auto no-repeat`;
   badge.textContent = d.badge;
   badge.className = 'badge ' + d.badgeClass;
   title.textContent = d.title;
@@ -397,22 +406,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ── Home Page Login Check ──
 function initHomeAuth() {
   const greetingEl = document.querySelector('.profile-greeting');
-  const navNameEl = document.querySelector('.user-menu span');
+  const navUserMenu = document.querySelector('.user-menu');
   if (greetingEl) {
     const logged = localStorage.getItem('bluvia_logged_in');
     let user = localStorage.getItem('bluvia_user') || 'Pengunjung';
-    // Parse JSON if stored as object string
     let displayName = user;
     try {
       const parsed = JSON.parse(user);
       if (parsed && typeof parsed === 'object') {
         displayName = parsed.display_name || parsed.email || 'Pengunjung';
-        localStorage.setItem('bluvia_user', displayName); // normalize to string
+        localStorage.setItem('bluvia_user', displayName);
       }
     } catch(e) {}
     if (logged === 'true') {
       greetingEl.textContent = `Halo, ${displayName} 👋`;
-      if (navNameEl) navNameEl.textContent = displayName;
+      if (navUserMenu) {
+        navUserMenu.style.display = 'flex';
+        const navNameEl = navUserMenu.querySelector('span');
+        if (navNameEl) navNameEl.textContent = displayName;
+      }
     } else {
       greetingEl.innerHTML = `Halo, Pengunjung 👋`;
       const subEl = document.querySelector('.profile-sub');
@@ -424,7 +436,11 @@ function initHomeAuth() {
         loginBtn.style.cssText = 'display:inline-block;margin-top:8px;padding:0.35rem 1rem;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;font-size:0.75rem;font-weight:600;border-radius:9999px;text-decoration:none;transition:all 0.2s';
         subEl.parentElement.appendChild(loginBtn);
       }
-      if (navNameEl) navNameEl.textContent = "Pengunjung";
+      if (navUserMenu) {
+        navUserMenu.style.cssText = 'display:flex;align-items:center;gap:8px;cursor:default';
+        navUserMenu.removeAttribute('onclick');
+        navUserMenu.innerHTML = '<a href="login.html" style="padding:6px 16px;border:1px solid var(--border);border-radius:var(--radius-md);color:var(--text);text-decoration:none;font-size:0.8rem;font-weight:500;transition:all 0.2s">Login</a><a href="register.html" style="padding:6px 16px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;border:none;border-radius:var(--radius-md);text-decoration:none;font-size:0.8rem;font-weight:600;transition:all 0.2s">Daftar</a>';
+      }
     }
   }
 }
@@ -480,8 +496,9 @@ const query = getUrlParam('q') || getUrlParam('search');
 
     allDramas.forEach(d => {
       const title = d.title || cleanTitle(d.id || '');
-      const card = document.createElement('div');
+      const card = document.createElement('a');
       card.className = 'poster-card';
+      card.href = (() => { const p = d.id || ((d.category || 'drama-korea') + '/' + title); return p.includes('/') ? '/drama/' + p : '/drama/' + (d.category || 'drama-korea') + '/' + p; })();
       
       card.style.cursor = 'pointer';
       card.dataset.dramaId = d.id || '';
@@ -492,9 +509,6 @@ const query = getUrlParam('q') || getUrlParam('search');
           <div class="poster-meta">${d.year || ''}${d.has_streaming ? ' · ▶' : ''}</div>
         </div>
       `;
-      card.addEventListener('click', () => {
-        window.location.href = `/drama/${d.id || title}`;
-      });
       grid.appendChild(card);
     });
   }
@@ -502,11 +516,49 @@ const query = getUrlParam('q') || getUrlParam('search');
   return true;
 }
 
+
+// ── Always populate sidebar ranking (runs on every page load) ──
+async function ensureSidebarRanking() {
+  try {
+    const trendRes = await api('/api/trending');
+    const trending = (trendRes?.dramas || trendRes || []).slice(0, 5);
+    if (trending.length === 0) return;
+    
+    const rankingCard = document.querySelector('.ranking-card');
+    if (!rankingCard) return;
+    
+    // Only populate if empty
+    if (rankingCard.querySelectorAll('.ranking-item').length > 0) return;
+    
+    rankingCard.querySelectorAll('.ranking-item').forEach(el => el.remove());
+    trending.forEach((d, i) => {
+      const title = d.title || '';
+      const numClass = i === 0 ? 'top1' : i === 1 ? 'top2' : i === 2 ? 'top3' : 'other';
+      const item = document.createElement('div');
+      item.className = 'ranking-item';
+      item.style.cursor = 'pointer';
+      item.innerHTML = `
+        <div class="ranking-num ${numClass}">${i + 1}</div>
+        <img class="ranking-thumb" src="${posterUrl(d)}" alt="${title}" onerror="this.style.background='var(--bg-secondary)'">
+        <div class="ranking-info">
+          <div class="ranking-title">${title}</div>
+          <div class="ranking-ep">${d.episode_count || d.total_episodes || ''} episodes</div>
+        </div>
+      `;
+      makeDramaClickable(item, d);
+      rankingCard.appendChild(item);
+    });
+  } catch(e) { console.warn('Sidebar ranking load failed:', e); }
+}
+
 // ── Index Page (Landing) ──
 async function initLanding() {
   // First check if this is a search results page
   const isSearch = await initSearchResults();
-  if (isSearch) return; // search results already rendered
+  if (isSearch) {
+    await ensureSidebarRanking();
+    return;
+  }
 
   const [featuredRes, trendingRes, recentlyRes, dkRes, vsRes] = await Promise.all([
     api('/api/featured'),
@@ -700,11 +752,137 @@ async function initLanding() {
   }
 }
 
+
+// ── View Pages (ongoing/terbaru) — search-style grid ──
+async function initViewPage(view) {
+  const mainContent = document.querySelector('.home-content') || document.querySelector('.main-content');
+  if (!mainContent) return;
+
+  document.title = view === 'ongoing' ? 'Ongoing — BLUVIA' : 'Terbaru — BLUVIA';
+
+  // Update page title if exists
+  const pageTitle = mainContent.querySelector('.page-title, h1');
+  if (pageTitle) pageTitle.textContent = view === 'ongoing' ? 'Drama Ongoing' : 'Drama Terbaru';
+
+  // Clear existing sections
+  mainContent.innerHTML = '';
+
+  // Show loading
+  const loading = document.createElement('div');
+  loading.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;gap:1rem;';
+  loading.innerHTML = '<div class="spinner"></div><p style="color:var(--text-secondary);font-size:var(--fs-sm);">Memuat data...</p>';
+  mainContent.appendChild(loading);
+
+  // Fetch data based on view type
+  let dramas = [];
+  try {
+    if (view === 'ongoing') {
+      const res = await api('/api/home');
+      dramas = res?.ongoing || [];
+    } else {
+      // terbaru — fetch korea_all + film_korea from home API
+      const homeRes = await api('/api/home');
+      const korea = homeRes?.korea_all || [];
+      const films = homeRes?.film_korea || [];
+      dramas = [...korea, ...films];
+    }
+  } catch (e) {
+    console.error('View page fetch failed:', e);
+  }
+
+  // Remove loading
+  loading.remove();
+
+  // Build search-style grid
+  const section = document.createElement('section');
+  section.style.cssText = 'margin-top:var(--space-lg);';
+
+  const header = document.createElement('div');
+  header.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg);';
+  header.innerHTML = `
+    <div>
+      <h2 style="font-size:var(--fs-xl);font-weight:800;">${view === 'ongoing' ? 'Drama Ongoing' : 'Drama Terbaru'}</h2>
+      <p style="font-size:var(--fs-sm);color:var(--text-secondary);">${dramas.length} drama ditemukan</p>
+    </div>
+    <a href="home.html" style="font-size:var(--fs-sm);color:var(--accent);display:flex;align-items:center;gap:0.25rem;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      Kembali
+    </a>
+  `;
+  section.appendChild(header);
+
+  const grid = document.createElement('div');
+  grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:var(--space-md);';
+  section.appendChild(grid);
+
+  if (dramas.length === 0) {
+    grid.innerHTML = '<p style="color:var(--text-muted);grid-column:1/-1;text-align:center;padding:var(--space-2xl);">Tidak ada drama ditemukan.</p>';
+  } else {
+    dramas.forEach(d => {
+      const title = d.title || cleanTitle(d.id || '');
+      const dramaId = d.id || (d.category && d.slug ? d.category + '/' + d.slug : d.slug || '');
+      const card = document.createElement('a');
+      card.className = 'poster-card';
+      card.href = `/drama/${dramaId}`;
+      card.style.cursor = 'pointer';
+      card.innerHTML = `
+        <img class="poster-img" src="${d.poster_url || posterUrl(d)}" alt="${title}" onerror="this.style.background='var(--bg-secondary)'">
+        <div class="poster-info">
+          <div class="poster-title">${title}</div>
+          <div class="poster-meta">${d.year || ''}${d.episode ? ' · Ep ' + d.episode : ''}${d.total_episodes ? ' · ' + d.total_episodes + ' eps' : ''}</div>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  mainContent.appendChild(section);
+
+  // Also update sidebar ranking with ongoing data
+  try {
+    const home = await api('/api/home');
+    if (home) {
+      const dkDramas = home.korea_all || [];
+      updateSidebarRanking(dkDramas.slice(0, 5));
+    }
+  } catch(e) {}
+}
+
+function updateSidebarRanking(dramas) {
+  const rankingCard = document.querySelector('.ranking-card');
+  if (!rankingCard || dramas.length === 0) return;
+  rankingCard.querySelectorAll('.ranking-item').forEach(el => el.remove());
+  dramas.forEach((d, i) => {
+    const title = d.title || '';
+    const numClass = i === 0 ? 'top1' : i === 1 ? 'top2' : i === 2 ? 'top3' : 'other';
+    const item = document.createElement('div');
+    item.className = 'ranking-item';
+    item.style.cursor = 'pointer';
+    item.innerHTML = `
+      <div class="ranking-num ${numClass}">${i + 1}</div>
+      <img class="ranking-thumb" src="${d.poster_url || posterUrl(d)}" alt="${title}" onerror="this.style.background='var(--bg-secondary)'">
+      <div class="ranking-info">
+        <div class="ranking-title">${title}</div>
+        <div class="ranking-ep">${d.total_episodes || d.episode_count || ''} episodes</div>
+      </div>
+    `;
+    makeDramaClickable(item, d);
+    rankingCard.appendChild(item);
+  });
+}
+
 // ── Home Page (After Login) ──
 async function initHome() {
   // Check for search query first
   const isSearch = await initSearchResults();
   if (isSearch) return;
+
+  // Check for view=ongoing or ?view=terbaru
+  const viewParam = getUrlParam('view');
+  if (viewParam === 'ongoing' || viewParam === 'terbaru') {
+    await initViewPage(viewParam);
+    return;
+  }
 
   // Single API call for all home data
   const home = await api('/api/home');
@@ -728,8 +906,9 @@ async function initHome() {
       const title = d.title || '';
       const dramaId = d.id || (d.category && d.slug ? d.category + '/' + d.slug : d.slug || '');
       const epLabel = d.total_episodes || d.episode || '';
-      const card = document.createElement('div');
+      const card = document.createElement('a');
       card.className = 'poster-card';
+      card.href = `/drama/${dramaId}`;
       card.innerHTML = `
         <img class="poster-img" src="${d.poster_url || ''}" alt="${title}" onerror="this.style.background='var(--bg-secondary)'">
         <div class="poster-info">
@@ -738,9 +917,6 @@ async function initHome() {
         </div>
       `;
       card.style.cursor = 'pointer';
-      card.addEventListener('click', () => {
-        window.location.href = `/drama/${dramaId}`;
-      });
       dkSection.appendChild(card);
     });
   }
@@ -755,8 +931,9 @@ async function initHome() {
       const title = d.title || '';
       const dramaId = d.id || (d.category && d.slug ? d.category + '/' + d.slug : d.slug || '');
       const epNum = d.episode || d.total_episodes || '';
-      const card = document.createElement('div');
+      const card = document.createElement('a');
       card.className = 'poster-card';
+      card.href = `/drama/${dramaId}`;
       card.innerHTML = `
         <span class="poster-badge badge">Ep. ${epNum || '?'}</span>
         <img class="poster-img" src="${d.poster_url || ''}" alt="${title}" onerror="this.style.background='var(--bg-secondary)'">
@@ -766,9 +943,6 @@ async function initHome() {
         </div>
       `;
       card.style.cursor = 'pointer';
-      card.addEventListener('click', () => {
-        window.location.href = `/drama/${dramaId}`;
-      });
       epBaru.appendChild(card);
     });
   }
@@ -782,8 +956,9 @@ async function initHome() {
       const title = d.title || '';
       const dramaId = d.id || (d.category && d.slug ? d.category + '/' + d.slug : d.slug || '');
       const epLabel = d.total_episodes || d.episode || '';
-      const card = document.createElement('div');
+      const card = document.createElement('a');
       card.className = 'poster-card';
+      card.href = `/drama/${dramaId}`;
       card.innerHTML = `
         <img class="poster-img" src="${d.poster_url || ''}" alt="${title}" onerror="this.style.background='var(--bg-secondary)'">
         <div class="poster-info">
@@ -792,9 +967,6 @@ async function initHome() {
         </div>
       `;
       card.style.cursor = 'pointer';
-      card.addEventListener('click', () => {
-        window.location.href = `/drama/${dramaId}`;
-      });
       el.appendChild(card);
     });
   }
@@ -935,7 +1107,7 @@ function openEpisodePicker(episodes, dramaId) {
     btn.className = 'episode-pick-item';
     btn.textContent = i + 1;
     btn.onclick = () => {
-      window.location.href = `/play/${dramaId}?ep=${i + 1}`;
+      const epSlug = dramaId.includes("/") ? dramaId.split("/").pop() : dramaId; window.location.href = `/play/${epSlug}?ep=${i + 1}`;
     };
     grid.appendChild(btn);
   });
@@ -1341,7 +1513,7 @@ function toggleDarkMode() {
   const isLight = document.body.classList.contains("light-mode");
   localStorage.setItem("bluvia_theme", isLight ? "light" : "dark");
   const toggle = document.getElementById("dark-toggle");
-  if (toggle) toggle.classList.toggle("off", !isLight);
+  if (toggle) toggle.classList.toggle("off", isLight);
 }
 
 (function initTheme() {
