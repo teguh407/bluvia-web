@@ -828,20 +828,18 @@ async function initHome() {
       trendingScroll.innerHTML = '';
       trendingDramas.slice(0, 7).forEach((d, i) => {
         const title = d.title || '';
+        const epCount = d.total_episodes || d.episode_count || d.episode || d.episodes || '';
         const card = document.createElement('div');
         card.className = 'poster-card';
-        card.style.cursor = 'pointer';
         card.innerHTML = `
           <div class="poster-rank">${i + 1}</div>
           <img class="poster-img" src="${d.poster_url || posterUrl(d)}" alt="${title}" onerror="this.style.background='var(--bg-secondary)'">
           <div class="poster-info">
             <div class="poster-title">${title}</div>
-            <div class="poster-meta">${d.year || ''} · ${d.episode || d.episodes || '?'} eps</div>
+            <div class="poster-meta">${d.year || ''}${epCount ? ' · ' + epCount + ' eps' : ''}</div>
           </div>
         `;
-        card.addEventListener('click', () => {
-          window.location.href = `/drama/${d.id || d.slug || ''}`;
-        });
+        makeDramaClickable(card, d);
         trendingScroll.appendChild(card);
       });
     }
