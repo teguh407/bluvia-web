@@ -5,22 +5,151 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin — BLUVIA</title>
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/admin.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%233b82f6'/><polygon points='12,8 26,16 12,24' fill='white'/></svg>">
+  <link rel="stylesheet" href="css/admin.css?v=302">
+  
+  <link rel="icon" href="img/logo-bluvia.png">
+  <style>
+    .log-viewer { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; font-family: monospace; font-size: 0.75rem; color: var(--text-secondary); max-height: 500px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; line-height: 1.6; }
+    .stat-card-server { display: flex; flex-direction: column; gap: 4px; }
+    .stat-card-server .stat-label { font-size: 0.7rem; }
+    .stat-card-server .stat-value { font-size: 1.5rem; font-weight: 700; }
+    .toggle-switch { position: relative; display: inline-block; width: 48px; height: 26px; cursor: pointer; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #475569; border-radius: 26px; transition: 0.3s; }
+    .toggle-slider::before { content: ''; position: absolute; height: 20px; width: 20px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
+    .toggle-switch input:checked + .toggle-slider { background: #22c55e; }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(22px); }
+    .admin-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1000; display: flex; align-items: center; justify-content:center; }
+    .admin-modal { background: var(--bg-primary); border: 1px solid var(--border); border-radius: 12px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+    .admin-modal-body { padding: 24px; }
+    .admin-modal-footer { padding: 16px 24px; display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--border); }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: var(--fs-xs); font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-primary); font-size: var(--fs-sm); padding: 8px 12px; box-sizing: border-box; font-family: inherit; }
+    .form-group textarea { resize: vertical; min-height: 60px; }
+    .backup-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+    .backup-item:last-child { border-bottom: none; }
+    .deploy-log-entry { padding: 8px 0; border-bottom: 1px solid var(--border); font-size: var(--fs-sm); }
+    .deploy-log-entry:last-child { border-bottom: none; }
+    .export-btn { display: inline-flex; align-items: center; gap: 6px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); padding: 10px 20px; font-weight: 600; cursor: pointer; font-size: var(--fs-sm); }
+    .export-btn:hover { opacity: 0.9; }
+  </style>
 </head>
 <body>
+<div id="auth-overlay" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(8,12,24,0.97);z-index:9999;display:flex;align-items:center;justify-content:center;font-family:inherit;">
+  <div style="text-align:center;max-width:360px;width:90%;padding:40px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:16px;">
+    <img src="img/logo-bluvia.png" alt="BLUVIA" style="width:48px;height:48px;border-radius:12px;margin-bottom:16px;">
+    <h2 style="color:#fff;font-size:1.3rem;margin:0 0 6px;">Admin Panel</h2>
+    <p style="color:rgba(255,255,255,0.5);font-size:0.85rem;margin:0 0 24px;">Login to continue &mdash; only 1 device at a time</p>
+    <form id="auth-form" onsubmit="return handleAuth(event)">
+      <input id="auth-email" type="email" value="admin@bluvia.app" placeholder="Email" autocomplete="username" style="width:100%;padding:12px 16px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-size:0.95rem;outline:none;box-sizing:border-box;margin-bottom:12px;">
+      <input id="auth-password" type="password" placeholder="Password" autocomplete="current-password" style="width:100%;padding:12px 16px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-size:0.95rem;outline:none;box-sizing:border-box;margin-bottom:12px;">
+      <p id="auth-error" style="color:#ef4444;font-size:0.8rem;margin:0 0 12px;display:none;"></p>
+      <button type="submit" id="auth-btn" style="width:100%;padding:12px;background:linear-gradient(135deg,#3b82f6,#2563eb);border:none;border-radius:10px;color:#fff;font-size:0.95rem;font-weight:600;cursor:pointer;">Login</button>
+    </form>
+    <p style="color:rgba(255,255,255,0.3);font-size:0.75rem;margin:16px 0 0;">Logging in from another device will log you out here.</p>
+  </div>
+</div>
+<script>
+(function(){
+  var TOKEN_KEY = 'bluvia_admin_token';
+  var EXPIRY_KEY = 'bluvia_admin_expiry';
+  var DEVICE_KEY = 'bluvia_admin_device';
+  var overlay = document.getElementById('auth-overlay');
+  var checkInterval = null;
+
+  function getDeviceInfo() {
+    var ua = navigator.userAgent;
+    var device = 'Unknown';
+    if (/Android/.test(ua)) device = 'Android';
+    else if (/iPhone|iPad/.test(ua)) device = 'iOS';
+    else if (/Windows/.test(ua)) device = 'Windows';
+    else if (/Mac/.test(ua)) device = 'macOS';
+    else if (/Linux/.test(ua)) device = 'Linux';
+    var browser = '';
+    if (ua.indexOf('Edg/') !== -1) browser = 'Edge';
+    else if (ua.indexOf('Chrome/') !== -1) browser = 'Chrome';
+    else if (ua.indexOf('Firefox/') !== -1) browser = 'Firefox';
+    else if (ua.indexOf('Safari/') !== -1) browser = 'Safari';
+    return device + ' ' + browser;
+  }
+
+  async function checkSession() {
+    var token = localStorage.getItem(TOKEN_KEY);
+    if (!token) { showLogin(); return; }
+    try {
+      var res = await fetch('/api/admin/session/check?token=' + encodeURIComponent(token));
+      if (res.ok) { hideLogin(); startAutoLogoutCheck(); }
+      else { localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(EXPIRY_KEY); showLogin(); }
+    } catch(e) {}
+  }
+
+  function showLogin() { overlay.style.display = 'flex'; if (checkInterval) clearInterval(checkInterval); }
+  function hideLogin() { overlay.style.display = 'none'; }
+
+  function startAutoLogoutCheck() {
+    if (checkInterval) clearInterval(checkInterval);
+    checkInterval = setInterval(async function() {
+      var token = localStorage.getItem(TOKEN_KEY);
+      if (!token) { showLogin(); return; }
+      try {
+        var res = await fetch('/api/admin/session/check?token=' + encodeURIComponent(token));
+        if (!res.ok) {
+          localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(EXPIRY_KEY);
+          showLogin(); alert('Session expired or logged in from another device.');
+        }
+      } catch(e) {}
+    }, 60000);
+  }
+
+  checkSession();
+
+  window.handleAuth = async function(e) {
+    e.preventDefault();
+    var email = document.getElementById('auth-email').value;
+    var pw = document.getElementById('auth-password').value;
+    var errEl = document.getElementById('auth-error');
+    var btn = document.getElementById('auth-btn');
+    if (!email || !pw) { errEl.textContent = 'Fill in all fields'; errEl.style.display = 'block'; return false; }
+    btn.textContent = 'Logging in...'; btn.disabled = true; errEl.style.display = 'none';
+    try {
+      var res = await fetch('/api/admin/login', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, password: pw, device_info: getDeviceInfo() })
+      });
+      var data = await res.json();
+      if (res.ok && data.token) {
+        localStorage.setItem(TOKEN_KEY, data.token);
+        localStorage.setItem(EXPIRY_KEY, data.expires_at);
+        localStorage.setItem(DEVICE_KEY, getDeviceInfo());
+        hideLogin(); window.location.reload();
+      } else { errEl.textContent = data.detail || 'Login failed'; errEl.style.display = 'block'; }
+    } catch(err) { errEl.textContent = 'Network error.'; errEl.style.display = 'block'; }
+    btn.textContent = 'Login'; btn.disabled = false;
+    return false;
+  };
+
+  window.adminLogout = async function() {
+    var token = localStorage.getItem(TOKEN_KEY);
+    if (token) { try { await fetch('/api/admin/logout?token=' + encodeURIComponent(token), { method: 'POST' }); } catch(e) {} }
+    localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(EXPIRY_KEY); localStorage.removeItem(DEVICE_KEY);
+    window.location.reload();
+  };
+})();
+</script>
 
 <div class="admin-layout">
 
   <!-- ═══════════════ SIDEBAR ═══════════════ -->
-  <aside class="admin-sidebar">
+  <aside class="admin-sidebar force-expand" id="admin-sidebar">
     <div class="admin-sidebar-header">
-      <div class="logo-icon">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><polygon points="4,2 14,8 4,14" fill="white"/></svg>
-      </div>
+      <img src="img/logo-bluvia.png" alt="BLUVIA" class="logo-img" style="width:28px;height:28px;border-radius:6px;object-fit:contain">
       <span class="logo-text">BLUVIA</span>
       <span class="admin-badge">Admin</span>
     </div>
+    <button class="sidebar-toggle-btn" onclick="toggleAdminSidebar()">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><polygon points="4,2 14,8 4,14" fill="white"/></svg>
+    </button>
 
     <nav class="admin-nav">
       <div class="admin-nav-label">Overview</div>
@@ -52,6 +181,27 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         Featured
       </a>
+      <a href="#" data-page="server">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+        Server
+      </a>
+      <a href="#" data-page="drama-analytics">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>
+        Drama Analytics
+      </a>
+
+      <a href="#" data-page="scrape-queue">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Scrape Queue
+      </a>
+      <a href="#" data-page="seo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        SEO
+      </a>
+      <a href="#" data-page="security">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Security
+      </a>
 
       <div class="admin-nav-label">Content</div>
       <a href="#" data-page="watch-history">
@@ -64,6 +214,34 @@
       </a>
 
       <div class="admin-nav-label">System</div>
+      <a href="#" data-page="visitors">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        Visitors
+      </a>
+      <a href="#" data-page="ip-bans">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        IP Bans
+      </a>
+      <a href="#" data-page="broadcasts">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+        Broadcasts
+      </a>
+      <a href="#" data-page="system-logs">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+        System Logs
+      </a>
+      <a href="#" data-page="growth">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        Growth
+      </a>
+      <a href="#" data-page="backups">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Backups
+      </a>
+      <a href="#" data-page="export">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Export
+      </a>
       <a href="#" data-page="settings">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         Settings
@@ -75,12 +253,9 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         Back to Site
       </a>
-      <a href="#" onclick="adminLogout()" style="color:#ef4444;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        Logout
-      </a>
     </div>
   </aside>
+  <div class="admin-sidebar-backdrop" id="sidebar-backdrop" onclick="closeMobileSidebar()"></div>
 
   <!-- ═══════════════ MAIN ═══════════════ -->
   <div class="admin-main">
@@ -88,6 +263,9 @@
     <header class="admin-topbar">
       <div class="admin-topbar-inner">
         <div class="admin-topbar-left">
+          <button class="mobile-hamburger" onclick="toggleAdminSidebar()" style="display:none;background:none;border:none;color:var(--text-primary);cursor:pointer;padding:4px;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
           <h1 id="page-title">Dashboard</h1>
         </div>
         <div class="admin-topbar-right">
@@ -99,8 +277,9 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             <span style="position:absolute;top:2px;right:2px;width:8px;height:8px;background:#ef4444;border-radius:50%;border:2px solid var(--bg-primary);"></span>
           </button>
+          <button onclick="adminLogout()" style="background:none;border:1px solid var(--border);color:var(--text-muted);padding:5px 12px;border-radius:8px;font-size:0.75rem;cursor:pointer;white-space:nowrap;" title="Logout">Logout</button>
           <div class="avatar" style="width:32px;height:32px;background:linear-gradient(135deg,#ef4444,#dc2626);">
-            <img src="https://i.pravatar.cc/64?img=12" alt="">
+            <img src="/img/default-avatar.jpg" alt="">
           </div>
         </div>
       </div>
@@ -109,6 +288,38 @@
     <!-- ═══════════════ DASHBOARD ═══════════════ -->
     <div class="admin-page active" id="page-dashboard">
       <div class="admin-content">
+        <!-- Hero Edit Section -->
+        <div class="admin-card" style="border:1px solid rgba(59,130,246,0.2);margin-bottom:var(--space-md);">
+          <div class="admin-card-header">
+            <h3>🎬 Hero / Featured Banner</h3>
+            <span style="font-size:var(--fs-xs);color:var(--text-muted);">Controls the main hero banner on the homepage</span>
+          </div>
+          <div class="admin-card-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+              <div class="form-group">
+                <label>Drama Slug</label>
+                <input type="text" id="hero-drama-slug" placeholder="e.g. absolute-value-of-romance">
+              </div>
+              <div class="form-group">
+                <label>Hero Image URL</label>
+                <input type="text" id="hero-image" placeholder="https://...">
+              </div>
+              <div class="form-group">
+                <label>Hero Title</label>
+                <input type="text" id="hero-title" placeholder="Display title">
+              </div>
+              <div class="form-group">
+                <label>Hero Synopsis</label>
+                <input type="text" id="hero-synopsis" placeholder="Short description">
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;margin-top:4px;">
+              <button onclick="saveHero()" style="background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:8px 20px;font-weight:600;cursor:pointer;font-size:var(--fs-sm);">Save Hero</button>
+              <span id="hero-msg" style="font-size:var(--fs-xs);display:none;"></span>
+            </div>
+          </div>
+        </div>
+
         <!-- Stat Cards -->
         <div class="stat-grid">
           <div class="stat-card">
@@ -177,8 +388,8 @@
               <div class="mini-bar-chart" id="watch-chart">
                 <!-- Bars rendered by JS -->
               </div>
-              <div id="watch-chart-labels" style="display:flex;justify-content:space-between;margin-top:28px;font-size:var(--fs-xs);color:var(--text-muted);">
-                <!-- Labels populated dynamically from API -->
+              <div style="display:flex;justify-content:space-between;margin-top:28px;font-size:var(--fs-xs);color:var(--text-muted);">
+                <span>Jun 23</span><span>Jun 24</span><span>Jun 25</span><span>Jun 26</span><span>Jun 27</span><span>Jun 28</span><span>Jun 29</span>
               </div>
             </div>
           </div>
@@ -288,8 +499,14 @@
       <div class="admin-content">
         <div class="admin-card">
           <div class="admin-card-header">
-            <h3>All Users (47)</h3>
-            <div style="display:flex;gap:var(--space-sm);">
+            <h3 id="users-heading">All Users (47)</h3>
+            <div style="display:flex;gap:var(--space-sm);align-items:center;">
+              <select id="user-segment-filter" onchange="loadUsersList()" style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:var(--fs-sm);padding:0.35rem 0.7rem;">
+                <option value="all">All Users</option>
+                <option value="active_7d">Active 7 Days</option>
+                <option value="inactive_30d">Inactive 30 Days</option>
+                <option value="new_this_week">New This Week</option>
+              </select>
               <div class="search-input" style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.35rem 0.7rem;display:flex;align-items:center;gap:6px;">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 <input type="text" placeholder="Search users..." style="background:transparent;border:none;outline:none;color:var(--text-primary);font-size:var(--fs-sm);width:140px;">
@@ -298,7 +515,7 @@
           </div>
           <div class="admin-card-body no-pad">
             <table class="admin-table" id="users-table">
-              <thead><tr><th>User</th><th>Joined</th><th>Watches</th><th>Last Active</th><th>Status</th><th></th></tr></thead>
+              <thead><tr><th>User</th><th>Joined</th><th>Watches</th><th>Last Active</th><th>Status</th><th>Actions</th></tr></thead>
               <tbody>
               </tbody>
             </table>
@@ -326,16 +543,16 @@
           </div>
           <div class="admin-card-body no-pad">
             <table class="admin-table">
-              <thead><tr><th>Title</th><th>Year</th><th>Category</th><th>Episodes</th><th>Status</th><th></th></tr></thead>
+              <thead><tr><th>Title</th><th>Year</th><th>Category</th><th>Episodes</th><th>Status</th><th>Actions</th></tr></thead>
               <tbody>
-                <tr><td><strong>Teach You a Lesson</strong></td><td>2026</td><td>Drakor</td><td>10</td><td><span class="status-badge active">Ongoing</span></td><td><button class="action-btn" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></td></tr>
-                <tr><td><strong>Reborn Rookie</strong></td><td>2026</td><td>Drakor</td><td>10</td><td><span class="status-badge active">Ongoing</span></td><td><button class="action-btn" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></td></tr>
-                <tr><td><strong>Doctor on the Edge</strong></td><td>2026</td><td>Drakor</td><td>6</td><td><span class="status-badge active">Ongoing</span></td><td><button class="action-btn" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></td></tr>
-                <tr><td><strong>My Royal Nemesis</strong></td><td>2026</td><td>Drakor</td><td>14</td><td><span class="status-badge inactive">Completed</span></td><td><button class="action-btn" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></td></tr>
-                <tr><td><strong>Absolute Value of Romance</strong></td><td>2026</td><td>Drakor</td><td>13</td><td><span class="status-badge inactive">Completed</span></td><td><button class="action-btn" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></td></tr>
-                <tr><td><strong>Study Group</strong></td><td>2025</td><td>Drakor</td><td>10</td><td><span class="status-badge inactive">Completed</span></td><td><button class="action-btn" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></td></tr>
-                <tr><td><strong>Love Next Door</strong></td><td>2024</td><td>Drakor</td><td>16</td><td><span class="status-badge inactive">Completed</span></td><td><button class="action-btn" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></td></tr>
-                <tr><td><strong>Parasyte: The Grey</strong></td><td>2024</td><td>Drakor</td><td>6</td><td><span class="status-badge inactive">Completed</span></td><td><button class="action-btn" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></td></tr>
+                <tr><td><strong>Teach You a Lesson</strong></td><td>2026</td><td>Drakor</td><td>10</td><td><span class="status-badge active">Ongoing</span></td><td><div style="display:flex;gap:4px;"><button class="action-btn" onclick="openDramaEditModal('teach-you-a-lesson','Teach You a Lesson','2026','Drakor','10','','')" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="action-btn" onclick="rescrapeDrama('teach-you-a-lesson')" title="Re-scrape" style="color:#f59e0b;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button></div></td></tr>
+                <tr><td><strong>Reborn Rookie</strong></td><td>2026</td><td>Drakor</td><td>10</td><td><span class="status-badge active">Ongoing</span></td><td><div style="display:flex;gap:4px;"><button class="action-btn" onclick="openDramaEditModal('reborn-rookie','Reborn Rookie','2026','Drakor','10','','')" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="action-btn" onclick="rescrapeDrama('reborn-rookie')" title="Re-scrape" style="color:#f59e0b;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button></div></td></tr>
+                <tr><td><strong>Doctor on the Edge</strong></td><td>2026</td><td>Drakor</td><td>9</td><td><span class="status-badge active">Ongoing</span></td><td><div style="display:flex;gap:4px;"><button class="action-btn" onclick="openDramaEditModal('doctor-on-the-edge','Doctor on the Edge','2026','Drakor','9','','')" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="action-btn" onclick="rescrapeDrama('doctor-on-the-edge')" title="Re-scrape" style="color:#f59e0b;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button></div></td></tr>
+                <tr><td><strong>My Royal Nemesis</strong></td><td>2026</td><td>Drakor</td><td>14</td><td><span class="status-badge inactive">Completed</span></td><td><div style="display:flex;gap:4px;"><button class="action-btn" onclick="openDramaEditModal('my-royal-nemesis','My Royal Nemesis','2026','Drakor','14','','')" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="action-btn" onclick="rescrapeDrama('my-royal-nemesis')" title="Re-scrape" style="color:#f59e0b;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button></div></td></tr>
+                <tr><td><strong>Absolute Value of Romance</strong></td><td>2026</td><td>Drakor</td><td>13</td><td><span class="status-badge inactive">Completed</span></td><td><div style="display:flex;gap:4px;"><button class="action-btn" onclick="openDramaEditModal('absolute-value-of-romance','Absolute Value of Romance','2026','Drakor','13','','')" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="action-btn" onclick="rescrapeDrama('absolute-value-of-romance')" title="Re-scrape" style="color:#f59e0b;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button></div></td></tr>
+                <tr><td><strong>Study Group</strong></td><td>2025</td><td>Drakor</td><td>10</td><td><span class="status-badge inactive">Completed</span></td><td><div style="display:flex;gap:4px;"><button class="action-btn" onclick="openDramaEditModal('study-group','Study Group','2025','Drakor','10','','')" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="action-btn" onclick="rescrapeDrama('study-group')" title="Re-scrape" style="color:#f59e0b;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button></div></td></tr>
+                <tr><td><strong>Love Next Door</strong></td><td>2024</td><td>Drakor</td><td>16</td><td><span class="status-badge inactive">Completed</span></td><td><div style="display:flex;gap:4px;"><button class="action-btn" onclick="openDramaEditModal('love-next-door','Love Next Door','2024','Drakor','16','','')" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="action-btn" onclick="rescrapeDrama('love-next-door')" title="Re-scrape" style="color:#f59e0b;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button></div></td></tr>
+                <tr><td><strong>Parasyte: The Grey</strong></td><td>2024</td><td>Drakor</td><td>6</td><td><span class="status-badge inactive">Completed</span></td><td><div style="display:flex;gap:4px;"><button class="action-btn" onclick="openDramaEditModal('parasyte-the-grey','Parasyte: The Grey','2024','Drakor','6','','')" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="action-btn" onclick="rescrapeDrama('parasyte-the-grey')" title="Re-scrape" style="color:#f59e0b;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></button></div></td></tr>
               </tbody>
             </table>
           </div>
@@ -350,37 +567,14 @@
           <div class="admin-card-header">
             <h3>Drama Requests</h3>
             <div style="display:flex;gap:var(--space-sm);">
-              <span class="status-badge pending">3 Pending</span>
+              <span class="status-badge pending" id="requests-pending-badge">Loading...</span>
             </div>
           </div>
           <div class="admin-card-body no-pad">
             <table class="admin-table">
               <thead><tr><th>User</th><th>Drama Title</th><th>Notes</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
-              <tbody>
-                <tr>
-                  <td><div class="table-user"><div class="avatar" style="width:28px;height:28px;background:linear-gradient(135deg,#f472b6,#ec4899);font-size:0.6rem;">A</div><span style="font-size:var(--fs-sm);">Alifia Putri</span></div></td>
-                  <td><strong>Queen of Tears</strong></td>
-                  <td style="color:var(--text-secondary);font-size:var(--fs-xs);">Requesting this drama please</td>
-                  <td style="color:var(--text-muted);font-size:var(--fs-xs);">Jun 28</td>
-                  <td><span class="status-badge pending">Pending</span></td>
-                  <td><div style="display:flex;gap:4px;"><button class="action-btn" title="Approve" style="color:#22c55e;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></button><button class="action-btn danger" title="Reject"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div></td>
-                </tr>
-                <tr>
-                  <td><div class="table-user"><div class="avatar" style="width:28px;height:28px;background:linear-gradient(135deg,#60a5fa,#3b82f6);font-size:0.6rem;">N</div><span style="font-size:var(--fs-sm);">Nur Elisya</span></div></td>
-                  <td><strong>My Liberation Notes</strong></td>
-                  <td style="color:var(--text-secondary);font-size:var(--fs-xs);">Bagus banget katanya</td>
-                  <td style="color:var(--text-muted);font-size:var(--fs-xs);">Jun 27</td>
-                  <td><span class="status-badge pending">Pending</span></td>
-                  <td><div style="display:flex;gap:4px;"><button class="action-btn" title="Approve" style="color:#22c55e;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></button><button class="action-btn danger" title="Reject"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div></td>
-                </tr>
-                <tr>
-                  <td><div class="table-user"><div class="avatar" style="width:28px;height:28px;background:linear-gradient(135deg,#a855f7,#7c3aed);font-size:0.6rem;">D</div><span style="font-size:var(--fs-sm);">Devi Abuhasan</span></div></td>
-                  <td><strong>Little Women</strong></td>
-                  <td style="color:var(--text-secondary);font-size:var(--fs-xs);"></td>
-                  <td style="color:var(--text-muted);font-size:var(--fs-xs);">Jun 25</td>
-                  <td><span class="status-badge added">Added</span></td>
-                  <td><span style="font-size:var(--fs-xs);color:var(--text-muted);">Completed</span></td>
-                </tr>
+              <tbody id="requests-tbody">
+                <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:20px;">Loading requests...</td></tr>
               </tbody>
             </table>
           </div>
@@ -399,8 +593,21 @@
           <div class="admin-card-body no-pad">
             <table class="admin-table">
               <thead><tr><th>Order</th><th>Drama</th><th>Category</th><th>Episodes</th><th>Actions</th></tr></thead>
-              <tbody id="featured-table-body">
-                <!-- Rows rendered dynamically by loadFeatured() -->
+              <tbody>
+                <tr>
+                  <td style="font-weight:700;color:#f59e0b;">1</td>
+                  <td><strong>My Royal Nemesis (2026)</strong></td>
+                  <td>Drama Korea</td>
+                  <td>14</td>
+                  <td><div style="display:flex;gap:4px;"><button class="action-btn" title="Move Up"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg></button><button class="action-btn" title="Move Down"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button><button class="action-btn danger" title="Remove"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div></td>
+                </tr>
+                <tr>
+                  <td style="font-weight:700;color:#94a3b8;">2</td>
+                  <td><strong>Doctor on the Edge (2026)</strong></td>
+                  <td>Drama Korea</td>
+                  <td>6</td>
+                  <td><div style="display:flex;gap:4px;"><button class="action-btn" title="Move Up"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg></button><button class="action-btn" title="Move Down"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button><button class="action-btn danger" title="Remove"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div></td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -470,8 +677,8 @@
             <div class="admin-card-header"><h3>Daily Watches (7 Days)</h3></div>
             <div class="admin-card-body">
               <div class="mini-bar-chart" id="analytics-chart"></div>
-              <div id="analytics-chart-labels" style="display:flex;justify-content:space-between;margin-top:28px;font-size:var(--fs-xs);color:var(--text-muted);">
-                <!-- Labels populated dynamically from API -->
+              <div style="display:flex;justify-content:space-between;margin-top:28px;font-size:var(--fs-xs);color:var(--text-muted);">
+                <span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span>
               </div>
             </div>
           </div>
@@ -485,7 +692,6 @@
                   <tr><td style="font-weight:600;">Farida Mustika</td><td><strong>26</strong></td></tr>
                   <tr><td style="font-weight:600;">Nur Elisya</td><td><strong>21</strong></td></tr>
                   <tr><td style="font-weight:600;">mimin aya</td><td><strong>17</strong></td></tr>
-                  <tr><td style="font-weight:600;">axelia</td><td><strong>15</strong></td></tr>
                 </tbody>
               </table>
             </div>
@@ -499,111 +705,1595 @@
       <div class="admin-content">
         <div class="admin-card">
           <div class="admin-card-header"><h3>Bookmarks (85 total)</h3></div>
-          <div class="admin-card-body">
-            <div class="empty-state">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-              <h4>Bookmark data available via API</h4>
-              <p>Connect to the Bluvia backend to view bookmark details.</p>
-            </div>
+          <div class="admin-card-body no-pad">
+            <table class="admin-table">
+              <thead><tr><th>User</th><th>Drama</th><th>Category</th><th>Added</th></tr></thead>
+              <tbody>
+                <tr><td style="font-weight:600;">Farida Mustika</td><td>Big Mouth (2022)</td><td>Drakor</td><td style="color:var(--text-muted);font-size:var(--fs-xs);">Jun 20</td></tr>
+                <tr><td style="font-weight:600;">Nur Elisya</td><td>Study Group (2025)</td><td>Drakor</td><td style="color:var(--text-muted);font-size:var(--fs-xs);">Jun 22</td></tr>
+                <tr><td style="font-weight:600;">axelia</td><td>Absolute Value of Romance (2026)</td><td>Drakor</td><td style="color:var(--text-muted);font-size:var(--fs-xs);">Jun 24</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
     </div>
 
     <!-- ═══════════════ SETTINGS ═══════════════ -->
-    <div class="admin-page" id="page-settings">
+    <!-- ═══════════════ SCRAPE QUEUE ═══════════════ -->
+    <div class="admin-page" id="page-scrape-queue">
       <div class="admin-content">
-        <div class="admin-card" style="margin-bottom:var(--space-md);">
-          <div class="admin-card-header"><h3>App Settings</h3></div>
-          <div class="admin-card-body">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-xl);">
-              <div class="input-group">
-                <label class="input-label">App Name</label>
-                <input type="text" value="BLUVIA" style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-md);padding:0.6rem 1rem;color:var(--text-primary);font-size:var(--fs-sm);width:100%;">
-              </div>
-              <div class="input-group">
-                <label class="input-label">Latest Version</label>
-                <input type="text" value="3.41" style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-md);padding:0.6rem 1rem;color:var(--text-primary);font-size:var(--fs-sm);width:100%;">
-              </div>
-              <div class="input-group">
-                <label class="input-label">Force Update Min Code</label>
-                <input type="number" value="335" style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-md);padding:0.6rem 1rem;color:var(--text-primary);font-size:var(--fs-sm);width:100%;">
-              </div>
-              <div class="input-group">
-                <label class="input-label">Update URL</label>
-                <input type="text" value="https://t.me/bluviapp" style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-md);padding:0.6rem 1rem;color:var(--text-primary);font-size:var(--fs-sm);width:100%;">
-              </div>
-            </div>
-            <div style="margin-top:var(--space-xl);">
-              <button class="btn btn-primary" onclick="saveSettings()">Save Changes</button>
+        <div class="stat-grid" id="scrape-stats">
+          <div class="stat-card"><div class="stat-card-info"><div class="stat-label">Total</div><div class="stat-value" id="sq-total">-</div></div><div class="stat-card-icon blue"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div></div>
+          <div class="stat-card"><div class="stat-card-info"><div class="stat-label">Pending</div><div class="stat-value" id="sq-pending">-</div></div><div class="stat-card-icon orange"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div></div>
+          <div class="stat-card"><div class="stat-card-info"><div class="stat-label">Running</div><div class="stat-value" id="sq-running">-</div></div><div class="stat-card-icon purple"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg></div></div>
+          <div class="stat-card"><div class="stat-card-info"><div class="stat-label">Done</div><div class="stat-value" id="sq-done">-</div></div><div class="stat-card-icon green"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div></div>
+        </div>
+
+        <div class="admin-card" style="margin-bottom:var(--space-xl);">
+          <div class="admin-card-header">
+            <h3>Scrape Queue</h3>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-ghost" onclick="retryAllFailed()">↻ Retry All Failed</button>
+              <button class="btn btn-danger" onclick="clearDoneQueue()">🗑 Clear Done</button>
             </div>
           </div>
+          <div class="filter-bar">
+            <select id="sq-filter" onchange="loadScrapeQueue()">
+              <option value="">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="running">Running</option>
+              <option value="done">Done</option>
+              <option value="failed">Failed</option>
+            </select>
+            <input type="text" id="sq-search" placeholder="Search dramas..." style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:var(--fs-sm);padding:0.4rem 0.8rem;flex:1;">
+          </div>
+          <div class="admin-card-body no-pad">
+            <table class="admin-table">
+              <thead>
+                <tr><th>ID</th><th>SLUG</th><th>STATUS</th><th>ATTEMPTS</th><th>ERROR</th><th>CREATED</th><th>ACTIONS</th></tr>
+              </thead>
+              <tbody id="sq-table-body"></tbody>
+            </table>
+          </div>
         </div>
-        <div class="admin-card">
-          <div class="admin-card-header"><h3>Server Info</h3></div>
-          <div class="admin-card-body">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-lg);">
-              <div><span style="font-size:var(--fs-xs);color:var(--text-muted);display:block;">Backend</span><span style="font-size:var(--fs-sm);font-weight:600;">43.153.207.36:8002</span></div>
-              <div><span style="font-size:var(--fs-xs);color:var(--text-muted);display:block;">Status</span><span style="font-size:var(--fs-sm);font-weight:600;color:#22c55e;">● Healthy</span></div>
-              <div><span style="font-size:var(--fs-xs);color:var(--text-muted);display:block;">Database</span><span style="font-size:var(--fs-sm);font-weight:600;">SQLite (3.1 MB)</span></div>
-              <div><span style="font-size:var(--fs-xs);color:var(--text-muted);display:block;">Service</span><span style="font-size:var(--fs-sm);font-weight:600;">systemd (bluvia-backend)</span></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ SEO MANAGEMENT ═══════════════ -->
+    <div class="admin-page" id="page-seo">
+      <div class="admin-content">
+        <div class="stat-grid" id="seo-stats">
+          <div class="stat-card"><div class="stat-card-info"><div class="stat-label">Total Dramas</div><div class="stat-value" id="seo-total">-</div></div><div class="stat-card-icon blue"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div></div>
+          <div class="stat-card"><div class="stat-card-info"><div class="stat-label">SEO Coverage</div><div class="stat-value" id="seo-coverage">-</div></div><div class="stat-card-icon green"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div></div>
+          <div class="stat-card"><div class="stat-card-info"><div class="stat-label">With SEO</div><div class="stat-value" id="seo-with">-</div></div><div class="stat-card-icon purple"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div></div>
+          <div class="stat-card"><div class="stat-card-info"><div class="stat-label">Missing Title</div><div class="stat-value" id="seo-missing">-</div></div><div class="stat-card-icon orange"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div></div>
+        </div>
+
+        <div class="admin-card" style="margin-bottom:var(--space-xl);">
+          <div class="admin-card-header">
+            <h3>SEO Management</h3>
+            <button class="btn btn-primary" onclick="bulkGenerateSeo()">⚡ Auto-Generate All</button>
+          </div>
+          <div class="filter-bar">
+            <select id="seo-filter" onchange="loadSeoList()">
+              <option value="">All</option>
+              <option value="missing">Missing SEO</option>
+              <option value="no_index">No Index</option>
+            </select>
+            <input type="text" id="seo-search" placeholder="Search dramas..." style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:var(--fs-sm);padding:0.4rem 0.8rem;flex:1;">
+          </div>
+          <div class="admin-card-body no-pad">
+            <table class="admin-table">
+              <thead>
+                <tr><th>TITLE</th><th>CATEGORY</th><th>META TITLE</th><th>META DESC</th><th>STATUS</th><th>ACTIONS</th></tr>
+              </thead>
+              <tbody id="seo-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SEO Edit Modal -->
+        <div class="modal-overlay" id="seo-modal">
+          <div class="modal" style="max-width:700px;">
+            <div class="modal-header">
+              <h3>Edit SEO — <span id="seo-modal-title"></span></h3>
+              <button class="action-btn" onclick="closeSeoModal()">✕</button>
+            </div>
+            <div class="modal-body">
+              <div class="form-group"><label>Meta Title</label><input id="seo-meta-title" placeholder="Title for search engines"></div>
+              <div class="form-group"><label>Meta Description</label><textarea id="seo-meta-desc" placeholder="Description for search engines (155 chars max)"></textarea></div>
+              <div class="form-group"><label>OG Title</label><input id="seo-og-title" placeholder="Title for social sharing"></div>
+              <div class="form-group"><label>OG Description</label><textarea id="seo-og-desc" placeholder="Description for social sharing"></textarea></div>
+              <div class="form-group"><label>OG Image URL</label><input id="seo-og-image" placeholder="https://..."></div>
+              <div class="form-group"><label>Canonical URL</label><input id="seo-canonical" placeholder="https://bluvia.app/drama/..."></div>
+              <div style="display:flex;align-items:center;gap:10px;margin-top:12px;">
+                <label style="font-size:var(--fs-sm);color:var(--text-secondary);">No Index:</label>
+                <input type="checkbox" id="seo-no-index">
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-ghost" onclick="closeSeoModal()">Cancel</button>
+              <button class="btn btn-primary" onclick="saveSeo()">Save SEO</button>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-  </div><!-- /admin-main -->
-</div><!-- /admin-layout -->
+    <!-- ═══════════════ SECURITY DASHBOARD ═══════════════ -->
+    <div class="admin-page" id="page-security">
+      <div class="admin-content">
+        <div class="stat-grid" id="sec-stats">
+          <div class="stat-card"><div class="stat-card-info"><div class="stat-label">Failed Logins (24h)</div><div class="stat-value" id="sec-logins">-</div></div><div class="stat-card-icon red"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div></div>
+          <div class="stat-card"><div class="stat-card-info"><div class="stat-label">Suspicious IPs</div><div class="stat-value" id="sec-suspicious">-</div></div><div class="stat-card-icon orange"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div></div>
+          <div class="stat-card"><div class="stat-card-info"><div class="stat-label">Rate Limit Hits</div><div class="stat-value" id="sec-ratelimit">-</div></div><div class="stat-card-icon purple"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div></div>
+          <div class="stat-card"><div class="stat-card-info"><div class="stat-label">Blocked IPs</div><div class="stat-value" id="sec-blocked">-</div></div><div class="stat-card-icon green"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div></div>
+        </div>
 
-<script src="js/admin-api.js"></script>
+        <div class="admin-card" style="margin-bottom:var(--space-xl);">
+          <div class="admin-card-header">
+            <h3>Security Events (24h)</h3>
+            <button class="btn btn-danger" onclick="clearOldEvents()">🗑 Clear Events >30d</button>
+          </div>
+          <div class="filter-bar">
+            <select id="sec-filter" onchange="loadSecurityEvents()">
+              <option value="">All Events</option>
+              <option value="failed_login">Failed Logins</option>
+              <option value="suspicious">Suspicious</option>
+              <option value="rate_limit">Rate Limit</option>
+            </select>
+          </div>
+          <div class="admin-card-body no-pad">
+            <table class="admin-table">
+              <thead>
+                <tr><th>TIME</th><th>TYPE</th><th>IP</th><th>SEVERITY</th><th>DETAILS</th><th>ACTIONS</th></tr>
+              </thead>
+              <tbody id="sec-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Top Attacking IPs -->
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3>Top Attacking IPs (24h)</h3>
+          </div>
+          <div class="admin-card-body" id="sec-top-ips" style="color:var(--text-muted);font-size:var(--fs-sm);">No data</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-page" id="page-settings">
+      <div class="admin-content">
+        <div class="admin-card">
+          <div class="admin-card-header"><h3>System Settings</h3></div>
+          <div class="admin-card-body">
+            <div style="display:flex;flex-direction:column;gap:var(--space-md);">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-sm) 0;border-bottom:1px solid var(--border);">
+                <div><div style="font-weight:600;font-size:var(--fs-sm);">Backend Version</div><div style="font-size:var(--fs-xs);color:var(--text-muted);">SanStream API v1.0.0</div></div>
+                <span class="status-badge active">Running</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-sm) 0;border-bottom:1px solid var(--border);">
+                <div><div style="font-weight:600;font-size:var(--fs-sm);">Database</div><div style="font-size:var(--fs-xs);color:var(--text-muted);">SQLite — sanstream.db</div></div>
+                <span class="status-badge active">Healthy</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-sm) 0;border-bottom:1px solid var(--border);">
+                <div><div style="font-weight:600;font-size:var(--fs-sm);">Access Log Retention</div><div style="font-size:var(--fs-xs);color:var(--text-muted);">Auto-cleanup after 30 days</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Maintenance Mode -->
+        <div class="admin-card">
+          <div class="admin-card-header"><h3>🔧 Maintenance Mode</h3></div>
+          <div class="admin-card-body">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <div style="font-weight:600;font-size:var(--fs-sm);">Enable Maintenance Mode</div>
+                <div style="font-size:var(--fs-xs);color:var(--text-muted);">When enabled, visitors see a maintenance page. Admin access is preserved.</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="maintenance-toggle" onchange="toggleMaintenance()">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div id="maintenance-msg" style="margin-top:8px;font-size:var(--fs-xs);display:none;"></div>
+          </div>
+        </div>
+
+        <!-- Cache Management -->
+        <div class="admin-card">
+          <div class="admin-card-header"><h3>🗑️ Cache Management</h3></div>
+          <div class="admin-card-body">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <div style="font-weight:600;font-size:var(--fs-sm);">Clear Nginx Cache</div>
+                <div style="font-size:var(--fs-xs);color:var(--text-muted);">Clears all cached responses from nginx. Users may experience slower responses until cache rebuilds.</div>
+              </div>
+              <button onclick="clearCache()" style="background:#f59e0b;color:#fff;border:none;border-radius:var(--radius-sm);padding:8px 20px;font-weight:600;cursor:pointer;font-size:var(--fs-sm);white-space:nowrap;">Clear Cache</button>
+            </div>
+            <div id="cache-msg" style="margin-top:8px;font-size:var(--fs-xs);display:none;"></div>
+          </div>
+        </div>
+
+        <!-- Notification Settings -->
+        <div class="admin-card">
+          <div class="admin-card-header"><h3>🔔 Notification Settings</h3></div>
+          <div class="admin-card-body">
+            <div style="display:flex;flex-direction:column;gap:16px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                  <div style="font-weight:600;font-size:var(--fs-sm);">Telegram Notifications</div>
+                  <div style="font-size:var(--fs-xs);color:var(--text-muted);">Send alerts to Telegram chat</div>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="notif-telegram-enabled" onchange="saveNotificationSettings()">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="form-group">
+                <label>Telegram Chat ID</label>
+                <input type="text" id="notif-telegram-chat-id" placeholder="-1001234567890" onchange="saveNotificationSettings()">
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid var(--border);">
+                <div>
+                  <div style="font-weight:600;font-size:var(--fs-sm);">New User Alert</div>
+                  <div style="font-size:var(--fs-xs);color:var(--text-muted);">Notify when a new user registers</div>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="notif-new-user" onchange="saveNotificationSettings()">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid var(--border);">
+                <div>
+                  <div style="font-weight:600;font-size:var(--fs-sm);">Drama Request Alert</div>
+                  <div style="font-size:var(--fs-xs);color:var(--text-muted);">Notify when a new drama request is submitted</div>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="notif-drama-request" onchange="saveNotificationSettings()">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid var(--border);">
+                <div>
+                  <div style="font-weight:600;font-size:var(--fs-sm);">Suspicious Activity Alert</div>
+                  <div style="font-size:var(--fs-xs);color:var(--text-muted);">Notify on suspicious IP activity</div>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="notif-suspicious" onchange="saveNotificationSettings()">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-top:1px solid var(--border);">
+                <div>
+                  <div style="font-weight:600;font-size:var(--fs-sm);">Server Error Alert</div>
+                  <div style="font-size:var(--fs-xs);color:var(--text-muted);">Notify on 5xx server errors</div>
+                </div>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="notif-server-error" onchange="saveNotificationSettings()">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+            <div id="notif-msg" style="margin-top:12px;font-size:var(--fs-xs);display:none;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ VISITORS (IP TRACKING) ═══════════════ -->
+    <div class="admin-page" id="page-visitors">
+      <div class="admin-content">
+
+        <!-- ══ LIVE ACTIVITY (full-width, top) ══ -->
+        <div class="admin-card" id="live-activity-card" style="margin-bottom:var(--space-md);border:1px solid rgba(34,197,94,0.2);">
+          <div class="admin-card-header" style="display:flex;justify-content:space-between;align-items:center;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="position:relative;width:10px;height:10px;">
+                <div style="width:10px;height:10px;border-radius:50%;background:#22c55e;animation:pulse-live 2s infinite;"></div>
+              </div>
+              <h3 style="margin:0;font-size:1rem;">Live Activity</h3>
+            </div>
+            <div style="display:flex;gap:12px;align-items:center;">
+              <div style="display:flex;align-items:center;gap:6px;">
+                <div style="width:8px;height:8px;border-radius:50%;background:#22c55e;"></div>
+                <span style="font-size:0.75rem;color:var(--text-muted);" id="live-watching-count">0</span>
+                <span style="font-size:0.7rem;color:var(--text-muted);">watching</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <div style="width:8px;height:8px;border-radius:50%;background:#3b82f6;"></div>
+                <span style="font-size:0.75rem;color:var(--text-muted);" id="live-browsing-count">0</span>
+                <span style="font-size:0.7rem;color:var(--text-muted);">browsing</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <div style="width:8px;height:8px;border-radius:50%;background:#f59e0b;"></div>
+                <span style="font-size:0.75rem;color:var(--text-muted);" id="live-admin-count">0</span>
+                <span style="font-size:0.7rem;color:var(--text-muted);">admin</span>
+              </div>
+              <span class="status-badge active" id="live-total" style="font-size:0.65rem;">0 online</span>
+            </div>
+          </div>
+          <div class="admin-card-body" id="live-activity-body" style="padding:0;">
+            <div style="padding:var(--space-md);color:var(--text-muted);font-size:var(--fs-sm);text-align:center;">No active users</div>
+          </div>
+        </div>
+        <style>
+          @keyframes pulse-live { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.3)} }
+          .live-user-row { display:flex; align-items:center; gap:12px; padding:10px 16px; border-bottom:1px solid var(--border); transition:background 0.2s; }
+          .live-user-row:hover { background:rgba(255,255,255,0.02); }
+          .live-user-row:last-child { border-bottom:none; }
+          .live-ip { font-family:monospace; font-size:0.85rem; font-weight:600; color:var(--text-primary); min-width:120px; }
+          .live-badge { font-size:0.65rem; padding:2px 8px; border-radius:4px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }
+          .live-detail { font-size:0.8rem; color:var(--text-secondary); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+          .live-device { font-size:0.7rem; color:var(--text-muted); display:flex; align-items:center; gap:4px; }
+          .live-time { font-size:0.7rem; color:var(--text-muted); white-space:nowrap; }
+        </style>
+
+        <div class="stat-grid" style="grid-template-columns:repeat(4,1fr);" id="visitor-stats">
+          <div class="stat-card">
+            <div class="stat-card-info">
+              <div class="stat-label">Unique IPs (7d)</div>
+              <div class="stat-value" id="v-unique-ips">-</div>
+            </div>
+            <div class="stat-card-icon blue"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-info">
+              <div class="stat-label">Total Requests (7d)</div>
+              <div class="stat-value" id="v-total-reqs">-</div>
+            </div>
+            <div class="stat-card-icon green"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-info">
+              <div class="stat-label">Suspicious IPs</div>
+              <div class="stat-value" id="v-suspicious">-</div>
+            </div>
+            <div class="stat-card-icon orange"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-info">
+              <div class="stat-label">Today Visitors</div>
+              <div class="stat-value" id="v-today">-</div>
+            </div>
+            <div class="stat-card-icon purple"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+          </div>
+        </div>
+
+        <div class="charts-grid">
+          <div class="admin-card">
+            <div class="admin-card-header"><h3>Daily Visitors (7 Days)</h3></div>
+            <div class="admin-card-body">
+              <div class="mini-bar-chart" id="visitors-chart"></div>
+              <div style="display:flex;justify-content:space-between;margin-top:28px;font-size:var(--fs-xs);color:var(--text-muted);" id="visitors-chart-labels"></div>
+            </div>
+          </div>
+          <div class="admin-card">
+            <div class="admin-card-header"><h3>Top Pages</h3></div>
+            <div class="admin-card-body no-pad">
+              <table class="admin-table" id="top-pages-table">
+                <thead><tr><th>Page</th><th>Visits</th><th>Unique</th><th>Avg ms</th><th>Errors</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3>All Visitors</h3>
+            <div style="display:flex;gap:var(--space-sm);align-items:center;">
+              <select id="visitor-days" style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:var(--fs-sm);padding:0.35rem 0.7rem;">
+                <option value="1">Last 24h</option>
+                <option value="7" selected>Last 7 days</option>
+                <option value="30">Last 30 days</option>
+              </select>
+            </div>
+          </div>
+          <div class="admin-card-body no-pad">
+            <table class="admin-table" id="visitors-table">
+              <thead><tr><th>IP Address</th><th>Requests</th><th>Pages</th><th>First Seen</th><th>Last Seen</th><th>Status</th><th></th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <div class="admin-card-header"><h3>Recent Requests</h3></div>
+          <div class="admin-card-body no-pad">
+            <table class="admin-table" id="access-log-table">
+              <thead><tr><th>Time</th><th>IP</th><th>Method</th><th>Path</th><th>Status</th><th>ms</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ SERVER STATUS ═══════════════ -->
+    <div class="admin-page" id="page-server">
+      <div class="admin-content">
+        <div class="stat-grid" style="grid-template-columns:repeat(4,1fr);">
+          <div class="stat-card stat-card-server">
+            <div class="stat-label">CPU Load</div>
+            <div class="stat-value" id="srv-cpu">-</div>
+          </div>
+          <div class="stat-card stat-card-server">
+            <div class="stat-label">Memory</div>
+            <div class="stat-value" id="srv-memory">-</div>
+          </div>
+          <div class="stat-card stat-card-server">
+            <div class="stat-label">Disk</div>
+            <div class="stat-value" id="srv-disk">-</div>
+          </div>
+          <div class="stat-card stat-card-server">
+            <div class="stat-label">Uptime</div>
+            <div class="stat-value" id="srv-uptime">-</div>
+          </div>
+        </div>
+        <div class="charts-grid">
+          <div class="admin-card">
+            <div class="admin-card-header"><h3>Backend Status</h3></div>
+            <div class="admin-card-body">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div id="srv-backend-dot" style="width:12px;height:12px;border-radius:50%;background:#64748b;"></div>
+                <span id="srv-backend-status" style="font-weight:600;">Checking...</span>
+              </div>
+            </div>
+          </div>
+          <div class="admin-card">
+            <div class="admin-card-header"><h3>Database</h3></div>
+            <div class="admin-card-body">
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;justify-content:space-between;font-size:var(--fs-sm);"><span style="color:var(--text-muted);">DB Size</span><span id="srv-db-size" style="font-weight:600;">-</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:var(--fs-sm);"><span style="color:var(--text-muted);">Type</span><span id="srv-db-type" style="font-weight:600;">-</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="admin-card">
+          <div class="admin-card-header"><h3>Auto-refresh: 10s</h3></div>
+          <div class="admin-card-body" style="color:var(--text-muted);font-size:var(--fs-sm);">Server status updates automatically every 10 seconds.</div>
+        </div>
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3>📦 Deploy Log</h3>
+            <button onclick="loadDeployLog()" style="background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:6px 16px;font-weight:600;cursor:pointer;font-size:var(--fs-xs);">Refresh</button>
+          </div>
+          <div class="admin-card-body" id="deploy-log-body" style="color:var(--text-muted);font-size:var(--fs-sm);">Loading deploy log...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ DRAMA ANALYTICS ═══════════════ -->
+    <div class="admin-page" id="page-drama-analytics">
+      <div class="admin-content">
+        <div class="admin-card">
+          <div class="admin-card-header"><h3>Most Watched Dramas</h3></div>
+          <div class="admin-card-body no-pad">
+            <table class="admin-table" id="drama-analytics-table">
+              <thead><tr><th>#</th><th>Title</th><th>Watches</th><th>Unique Viewers</th><th>Episodes Watched</th><th>First Watch</th><th>Last Watch</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="admin-card">
+          <div class="admin-card-header"><h3>Daily Watch Trend</h3></div>
+          <div class="admin-card-body">
+            <div class="mini-bar-chart" id="drama-trend-chart"></div>
+            <div style="display:flex;justify-content:space-between;margin-top:28px;font-size:var(--fs-xs);color:var(--text-muted);" id="drama-trend-labels"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ IP BANS ═══════════════ -->
+    <div class="admin-page" id="page-ip-bans">
+      <div class="admin-content">
+        <div class="admin-card">
+          <div class="admin-card-header"><h3>Ban an IP Address</h3></div>
+          <div class="admin-card-body">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <input type="text" id="ban-ip-input" placeholder="IP Address" style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:var(--fs-sm);padding:8px 12px;flex:1;min-width:150px;">
+              <input type="text" id="ban-reason-input" placeholder="Reason (optional)" style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:var(--fs-sm);padding:8px 12px;flex:1;min-width:200px;">
+              <button onclick="banIP()" style="background:#ef4444;color:#fff;border:none;border-radius:var(--radius-sm);padding:8px 20px;font-weight:600;cursor:pointer;font-size:var(--fs-sm);">Ban IP</button>
+            </div>
+            <div id="ban-msg" style="margin-top:8px;font-size:var(--fs-xs);display:none;"></div>
+          </div>
+        </div>
+        <div class="admin-card">
+          <div class="admin-card-header"><h3>Banned IPs</h3></div>
+          <div class="admin-card-body no-pad">
+            <table class="admin-table" id="ip-bans-table">
+              <thead><tr><th>IP Address</th><th>Reason</th><th>Banned At</th><th>Action</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ BROADCASTS ═══════════════ -->
+    <div class="admin-page" id="page-broadcasts">
+      <div class="admin-content">
+        <div class="admin-card">
+          <div class="admin-card-header"><h3>Send Broadcast</h3></div>
+          <div class="admin-card-body">
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <input type="text" id="broadcast-title" placeholder="Title" style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:var(--fs-sm);padding:8px 12px;">
+              <textarea id="broadcast-message" placeholder="Message..." rows="3" style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:var(--fs-sm);padding:8px 12px;resize:vertical;font-family:inherit;"></textarea>
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <select id="broadcast-type" style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:var(--fs-sm);padding:8px 12px;">
+                  <option value="info">Info</option>
+                  <option value="warning">Warning</option>
+                  <option value="success">Success</option>
+                </select>
+                <button onclick="sendBroadcast()" style="background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:8px 20px;font-weight:600;cursor:pointer;font-size:var(--fs-sm);">Send Broadcast</button>
+              </div>
+              <div id="broadcast-msg" style="font-size:var(--fs-xs);display:none;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="admin-card">
+          <div class="admin-card-header"><h3>Past Broadcasts</h3></div>
+          <div class="admin-card-body no-pad">
+            <table class="admin-table" id="broadcasts-table">
+              <thead><tr><th>Title</th><th>Message</th><th>Type</th><th>Sent</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ SYSTEM LOGS ═══════════════ -->
+    <div class="admin-page" id="page-system-logs">
+      <div class="admin-content">
+        <div class="admin-card">
+          <div class="admin-card-header"><h3>System Logs</h3></div>
+          <div class="admin-card-body">
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+              <select id="log-service" style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:var(--fs-sm);padding:8px 12px;">
+                <option value="backend">Backend</option>
+                <option value="nginx">Nginx</option>
+                <option value="nginx-error">Nginx Error</option>
+              </select>
+              <input type="number" id="log-lines" value="50" min="10" max="500" style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:var(--fs-sm);padding:8px 12px;width:80px;">
+              <button onclick="loadSystemLogs()" style="background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:8px 20px;font-weight:600;cursor:pointer;font-size:var(--fs-sm);">Load Logs</button>
+            </div>
+          </div>
+        </div>
+        <div class="admin-card">
+          <div class="admin-card-body" style="padding:0;">
+            <div id="system-logs-output" class="log-viewer" style="margin:12px;min-height:100px;">Click "Load Logs" to fetch log data.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ GROWTH METRICS ═══════════════ -->
+    <div class="admin-page" id="page-growth">
+      <div class="admin-content">
+        <div class="stat-grid" style="grid-template-columns:repeat(4,1fr);" id="growth-stats">
+          <div class="stat-card">
+            <div class="stat-card-info"><div class="stat-label">Total Users</div><div class="stat-value" id="growth-total-users">-</div></div>
+            <div class="stat-card-icon blue"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-info"><div class="stat-label">Active 7 Days</div><div class="stat-value" id="growth-active-7d">-</div></div>
+            <div class="stat-card-icon green"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-info"><div class="stat-label">Active 30 Days</div><div class="stat-value" id="growth-active-30d">-</div></div>
+            <div class="stat-card-icon purple"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-info"><div class="stat-label">Retention (7d)</div><div class="stat-value" id="growth-retention-7d">-</div></div>
+            <div class="stat-card-icon orange"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+          </div>
+        </div>
+        <div class="admin-card">
+          <div class="admin-card-header"><h3>New Users Per Day</h3></div>
+          <div class="admin-card-body">
+            <div class="mini-bar-chart" id="growth-chart"></div>
+            <div style="display:flex;justify-content:space-between;margin-top:28px;font-size:var(--fs-xs);color:var(--text-muted);" id="growth-chart-labels"></div>
+          </div>
+        </div>
+        <div class="admin-card">
+          <div class="admin-card-header"><h3>Retention Rates</h3></div>
+          <div class="admin-card-body" id="growth-retention-body" style="color:var(--text-muted);font-size:var(--fs-sm);">Loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ BACKUPS ═══════════════ -->
+    <div class="admin-page" id="page-backups">
+      <div class="admin-content">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h3>💾 Backup Management</h3>
+            <button onclick="createBackup()" style="background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:8px 20px;font-weight:600;cursor:pointer;font-size:var(--fs-sm);">+ Create Backup</button>
+          </div>
+          <div class="admin-card-body" id="backup-msg" style="display:none;font-size:var(--fs-sm);"></div>
+          <div class="admin-card-body no-pad" id="backups-list">
+            <div style="padding:20px;text-align:center;color:var(--text-muted);font-size:var(--fs-sm);">Loading backups...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ EXPORT ═══════════════ -->
+    <div class="admin-page" id="page-export">
+      <div class="admin-content">
+        <div class="admin-card">
+          <div class="admin-card-header"><h3>📤 Export Data</h3></div>
+          <div class="admin-card-body">
+            <div style="display:flex;flex-direction:column;gap:16px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:16px;background:var(--bg-secondary);border-radius:var(--radius);">
+                <div>
+                  <div style="font-weight:600;font-size:var(--fs-sm);">Export Users</div>
+                  <div style="font-size:var(--fs-xs);color:var(--text-muted);">Download all user data as CSV file</div>
+                </div>
+                <button class="export-btn" onclick="exportCSV('users')">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Download CSV
+                </button>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:16px;background:var(--bg-secondary);border-radius:var(--radius);">
+                <div>
+                  <div style="font-weight:600;font-size:var(--fs-sm);">Export Dramas</div>
+                  <div style="font-size:var(--fs-xs);color:var(--text-muted);">Download all drama catalog data as CSV file</div>
+                </div>
+                <button class="export-btn" onclick="exportCSV('dramas')">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Download CSV
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Drama Edit Modal -->
+<div id="drama-edit-modal" class="admin-modal-overlay" style="display:none;" onclick="if(event.target===this)closeDramaEditModal()">
+  <div class="admin-modal">
+    <div class="admin-modal-body">
+      <h3 style="margin:0 0 16px;font-size:1.1rem;">Edit Drama</h3>
+      <input type="hidden" id="edit-drama-slug">
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" id="edit-drama-title">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group">
+          <label>Year</label>
+          <input type="number" id="edit-drama-year">
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <input type="text" id="edit-drama-category" placeholder="Drakor">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div class="form-group">
+          <label>Total Episodes</label>
+          <input type="number" id="edit-drama-episodes">
+        </div>
+        <div class="form-group">
+          <label>Poster URL</label>
+          <input type="text" id="edit-drama-poster" placeholder="https://...">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Synopsis</label>
+        <textarea id="edit-drama-synopsis" rows="3"></textarea>
+      </div>
+    </div>
+    <div class="admin-modal-footer">
+      <span id="drama-edit-msg" style="font-size:var(--fs-xs);flex:1;"></span>
+      <button onclick="closeDramaEditModal()" style="background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-primary);padding:8px 16px;border-radius:var(--radius-sm);cursor:pointer;font-size:var(--fs-sm);">Cancel</button>
+      <button onclick="saveDramaEdit()" style="background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:8px 20px;font-weight:600;cursor:pointer;font-size:var(--fs-sm);">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/admin-api.js?v=301"></script>
+<script src="/js/admin-features.js?v=300"></script>
 <script>
-// ── Page Navigation ──
+    function toggleAdminSidebar() {
+      var sidebar = document.getElementById('admin-sidebar');
+      var backdrop = document.getElementById('sidebar-backdrop');
+      if (window.innerWidth <= 768) {
+        sidebar.classList.toggle('mobile-open');
+        backdrop.classList.toggle('visible');
+      } else {
+        sidebar.classList.toggle('force-expand');
+      }
+    }
+    function closeMobileSidebar() {
+      var sidebar = document.getElementById('admin-sidebar');
+      var backdrop = document.getElementById('sidebar-backdrop');
+      sidebar.classList.remove('mobile-open');
+      backdrop.classList.remove('visible');
+    }
+const pageTitles = {
+  'scrape-queue': 'Scrape Queue',
+  'seo': 'SEO Management',
+  'security': 'Security Dashboard',
+  'dashboard': 'Dashboard', 'analytics': 'Analytics', 'users': 'Users',
+  'catalog': 'Catalog', 'requests': 'Requests', 'featured': 'Featured',
+  'watch-history': 'Watch History', 'bookmarks': 'Bookmarks',
+  'settings': 'Settings', 'visitors': 'Visitors & IP Tracking',
+  'server': 'Server Status', 'drama-analytics': 'Drama Analytics',
+  'ip-bans': 'IP Bans', 'broadcasts': 'Broadcasts', 'system-logs': 'System Logs',
+  'growth': 'Growth Metrics', 'backups': 'Backup Management', 'export': 'Export Data',
+};
+
 function switchPage(page) {
   document.querySelectorAll('.admin-page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.admin-nav a').forEach(a => a.classList.remove('active'));
   const target = document.getElementById('page-' + page);
   if (target) target.classList.add('active');
-  const navLink = document.querySelector(`.admin-nav a[data-page="${page}"]`);
+  const navLink = document.querySelector('.admin-nav a[data-page="' + page + '"]');
   if (navLink) navLink.classList.add('active');
-  const titles = {
-    dashboard: 'Dashboard', users: 'Users', catalog: 'Catalog',
-    requests: 'Requests', featured: 'Featured', 'watch-history': 'Watch History',
-    bookmarks: 'Bookmarks', analytics: 'Analytics', settings: 'Settings'
-  };
-  document.getElementById('page-title').textContent = titles[page] || page;
+  document.getElementById('page-title').textContent = pageTitles[page] || page;
+  if (page === 'users') loadUsersList();
+  if (page === 'visitors') loadVisitorsPage();
+  if (page === 'server') { loadServerStatus(); loadDeployLog(); }
+  if (page === 'drama-analytics') loadDramaAnalytics();
+  if (page === 'ip-bans') loadIPBans();
+  if (page === 'broadcasts') loadBroadcasts();
+  if (page === 'requests') loadRequests();
+  if (page === 'growth') loadGrowthMetrics();
+  if (page === 'backups') loadBackups();
+  if (page === 'settings') { loadMaintenanceStatus(); loadNotificationSettings(); }
+  if (page === 'dashboard') loadHero();
+  if (page === 'scrape-queue') loadScrapeQueue();
+  if (page === 'seo') loadSeoList();
+  if (page === 'security') loadSecurityDashboard();
 }
 
-document.querySelectorAll('.admin-nav a[data-page]').forEach(link => {
-  link.addEventListener('click', (e) => {
-    e.preventDefault();
-    switchPage(link.dataset.page);
-  });
+document.querySelectorAll('.admin-nav a[data-page]').forEach(a => {
+  a.addEventListener('click', (e) => { e.preventDefault(); switchPage(a.dataset.page); });
 });
 
-// ── Auth Check & Logout ──
-function adminLogout() {
-  sessionStorage.removeItem('bluvia_admin_auth');
-  window.location.href = 'login.html';
+async function loadVisitorsPage() {
+  const days = parseInt(document.getElementById('visitor-days').value) || 7;
+  await Promise.all([
+    loadVisitorStats(days), loadVisitorsChart(days),
+    loadTopPages(days), loadVisitorList(days), loadRecentAccessLogs(), loadLiveActivity(),
+  ]);
 }
 
-// Check auth on load
-(function() {
-  const auth = sessionStorage.getItem('bluvia_admin_auth');
-  if (!auth) {
-    // Prompt for password
-    const pass = prompt('Masukkan password admin:');
-    if (pass === 'bluvia2026') {
-      sessionStorage.setItem('bluvia_admin_auth', 'true');
-    } else {
-      alert('Password salah! Mengarahkan ke halaman login.');
-      window.location.href = 'login.html';
-    }
-  }
-})();
+async function loadVisitorStats(days) {
+  const data = await api('/api/admin/visitors?days=' + days);
+  if (!data) return;
+  document.getElementById('v-unique-ips').textContent = data.total_unique_ips;
+  document.getElementById('v-suspicious').textContent = data.suspicious_count;
+  document.getElementById('v-suspicious').style.color = data.suspicious_count > 0 ? '#f59e0b' : '';
+  const todayData = await api('/api/admin/visitors?days=1');
+  document.getElementById('v-today').textContent = todayData ? todayData.total_unique_ips : 0;
+  const totalReqs = data.visitors.reduce((sum, v) => sum + v.total_requests, 0);
+  document.getElementById('v-total-reqs').textContent = totalReqs.toLocaleString();
+}
 
-// Charts and data are loaded by js/admin-api.js via API
+async function loadVisitorsChart(days) {
+  const data = await api('/api/admin/visitors-chart?days=' + days);
+  if (!data || !data.chart) return;
+  const chart = document.getElementById('visitors-chart');
+  const labels = document.getElementById('visitors-chart-labels');
+  if (!chart) return;
+  const max = Math.max(...data.chart.map(d => d.unique_ips), 1);
+  chart.innerHTML = '';
+  labels.innerHTML = '';
+  data.chart.forEach((d, i) => {
+    const bar = document.createElement('div');
+    bar.className = 'mini-bar';
+    bar.style.height = (d.unique_ips / max * 100) + '%';
+    bar.title = d.date + ': ' + d.unique_ips + ' IPs, ' + d.total_requests + ' requests';
+    if (i === data.chart.length - 1) bar.style.opacity = '1';
+    chart.appendChild(bar);
+    const lbl = document.createElement('span');
+    lbl.textContent = d.date.slice(5);
+    labels.appendChild(lbl);
+  });
+}
+
+async function loadTopPages(days) {
+  const data = await api('/api/admin/top-pages?days=' + days + '&limit=10');
+  if (!data || !data.pages) return;
+  const tbody = document.querySelector('#top-pages-table tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  data.pages.forEach(p => {
+    const errorRate = p.visits > 0 ? Math.round(p.error_count / p.visits * 100) : 0;
+    const errorStyle = errorRate > 10 ? 'color:#ef4444;font-weight:700;' : errorRate > 0 ? 'color:#f59e0b;' : '';
+    tbody.innerHTML += '<tr><td style="font-family:monospace;font-size:var(--fs-xs);max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + p.path + '</td><td><strong>' + p.visits + '</strong></td><td>' + p.unique_visitors + '</td><td style="font-size:var(--fs-xs);">' + p.avg_response_ms + 'ms</td><td style="font-size:var(--fs-xs);' + errorStyle + '">' + p.error_count + '</td></tr>';
+  });
+}
+
+async function loadVisitorList(days) {
+  const data = await api('/api/admin/visitors?days=' + days);
+  if (!data || !data.visitors) return;
+  const tbody = document.querySelector('#visitors-table tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  data.visitors.forEach(v => {
+    const statusBadge = v.is_suspicious
+      ? '<span class="status-badge pending" style="font-size:0.6rem;">Suspicious</span>'
+      : v.total_requests > 50
+        ? '<span class="status-badge active" style="font-size:0.6rem;">Active</span>'
+        : '<span class="status-badge inactive" style="font-size:0.6rem;">Normal</span>';
+    const ua = v.user_agent || '';
+    let device = 'Bot';
+    let deviceIcon = '🤖';
+    if (ua.includes('Chrome') && !ua.includes('Edg')) { device = 'Chrome'; deviceIcon = '💻'; }
+    else if (ua.includes('Firefox')) { device = 'Firefox'; deviceIcon = '💻'; }
+    else if (ua.includes('Safari') && !ua.includes('Chrome')) { device = 'Safari'; deviceIcon = '💻'; }
+    else if (ua.includes('Edg')) { device = 'Edge'; deviceIcon = '💻'; }
+    else if (ua.includes('curl')) { device = 'curl'; deviceIcon = '🤖'; }
+    else if (ua.includes('Android')) { device = 'Android'; deviceIcon = '📱'; }
+    else if (ua.includes('iPhone') || ua.includes('iPad')) { device = 'iOS'; deviceIcon = '📱'; }
+    tbody.innerHTML += '<tr><td><div style="display:flex;align-items:center;gap:8px;"><code style="background:var(--bg-secondary);padding:2px 8px;border-radius:4px;font-size:var(--fs-xs);">' + v.ip + '</code><span style="font-size:var(--fs-xs);color:var(--text-muted);">' + deviceIcon + ' ' + device + '</span></div></td><td><strong>' + v.total_requests + '</strong></td><td>' + v.unique_paths + '</td><td style="color:var(--text-muted);font-size:var(--fs-xs);">' + timeAgo(v.first_seen) + '</td><td style="color:var(--text-muted);font-size:var(--fs-xs);">' + timeAgo(v.last_seen) + '</td><td>' + statusBadge + '</td><td><button class="action-btn" onclick="viewVisitorDetail(\'' + v.ip + '\')" title="View Details"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></td></tr>';
+  });
+}
+
+async function loadRecentAccessLogs() {
+  const data = await api('/api/admin/access-logs?limit=30');
+  if (!data || !data.logs) return;
+  const tbody = document.querySelector('#access-log-table tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  data.logs.forEach(log => {
+    const methodColors = { GET: '#22c55e', POST: '#3b82f6', PUT: '#f59e0b', DELETE: '#ef4444' };
+    const methodColor = methodColors[log.method] || '#94a3b8';
+    const statusColor = log.status >= 400 ? '#ef4444' : log.status >= 300 ? '#f59e0b' : '#22c55e';
+    tbody.innerHTML += '<tr><td style="color:var(--text-muted);font-size:var(--fs-xs);white-space:nowrap;">' + formatDateTime(log.created_at) + '</td><td><code style="font-size:var(--fs-xs);">' + log.ip + '</code></td><td><span style="color:' + methodColor + ';font-weight:700;font-size:var(--fs-xs);">' + log.method + '</span></td><td style="font-family:monospace;font-size:var(--fs-xs);max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + log.path + '</td><td><span style="color:' + statusColor + ';font-weight:700;font-size:var(--fs-xs);">' + log.status + '</span></td><td style="font-size:var(--fs-xs);color:' + (log.response_time_ms > 500 ? '#f59e0b' : 'var(--text-muted)') + ';">' + log.response_time_ms + 'ms</td></tr>';
+  });
+}
+
+async function viewVisitorDetail(ip) {
+  const data = await api('/api/admin/visitor-detail?ip=' + encodeURIComponent(ip) + '&days=7');
+  if (!data) return;
+  const s = data.summary;
+  let topPathsHtml = data.top_paths.map(function(p) { return '<tr><td style="font-family:monospace;font-size:var(--fs-xs);">' + p.path + '</td><td><strong>' + p.visits + '</strong></td></tr>'; }).join('');
+  let recentHtml = data.recent_logs.map(function(l) {
+    var mc = l.method === 'GET' ? '#22c55e' : '#3b82f6';
+    var sc = l.status >= 400 ? '#ef4444' : '#22c55e';
+    return '<tr><td style="font-size:var(--fs-xs);color:var(--text-muted);">' + formatDateTime(l.created_at) + '</td><td><span style="font-size:var(--fs-xs);font-weight:700;color:' + mc + ';">' + l.method + '</span></td><td style="font-family:monospace;font-size:var(--fs-xs);">' + l.path + '</td><td style="font-size:var(--fs-xs);color:' + sc + ';">' + l.status + '</td><td style="font-size:var(--fs-xs);">' + l.response_time_ms + 'ms</td></tr>';
+  }).join('');
+  var html = '<div style="padding:20px;"><h3 style="margin-bottom:16px;"><code style="background:var(--bg-secondary);padding:4px 12px;border-radius:6px;">' + ip + '</code></h3><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;"><div style="background:var(--bg-secondary);padding:12px;border-radius:8px;"><div style="font-size:var(--fs-xs);color:var(--text-muted);">Total Requests</div><div style="font-size:1.5rem;font-weight:700;">' + s.total_requests + '</div></div><div style="background:var(--bg-secondary);padding:12px;border-radius:8px;"><div style="font-size:var(--fs-xs);color:var(--text-muted);">Unique Pages</div><div style="font-size:1.5rem;font-weight:700;">' + s.unique_paths + '</div></div><div style="background:var(--bg-secondary);padding:12px;border-radius:8px;"><div style="font-size:var(--fs-xs);color:var(--text-muted);">Last Seen</div><div style="font-size:1rem;font-weight:600;">' + timeAgo(s.last_seen) + '</div></div></div><div style="margin-bottom:12px;font-size:var(--fs-xs);color:var(--text-muted);"><strong>UA:</strong> ' + (s.user_agent || 'N/A') + '</div><h4 style="margin:16px 0 8px;font-size:var(--fs-sm);">Top Pages</h4><table class="admin-table" style="margin-bottom:16px;"><thead><tr><th>Page</th><th>Visits</th></tr></thead><tbody>' + topPathsHtml + '</tbody></table><h4 style="margin:16px 0 8px;font-size:var(--fs-sm);">Recent Requests</h4><div style="max-height:300px;overflow-y:auto;"><table class="admin-table"><thead><tr><th>Time</th><th>Method</th><th>Path</th><th>Status</th><th>ms</th></tr></thead><tbody>' + recentHtml + '</tbody></table></div></div>';
+  var overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:1000;display:flex;align-items:center;justify-content:center;';
+  overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+  var modal = document.createElement('div');
+  modal.style.cssText = 'background:var(--bg-primary);border-radius:12px;max-width:700px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
+  modal.innerHTML = html + '<div style="text-align:right;padding:0 20px 16px;"><button onclick="this.closest(\'div[style*=fixed]\').remove()" style="background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-primary);padding:6px 16px;border-radius:6px;cursor:pointer;">Close</button></div>';
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+}
+
+setInterval(function() {
+  var visitorsPage = document.getElementById('page-visitors');
+  if (visitorsPage && visitorsPage.classList.contains('active')) loadVisitorsPage();
+}, 30000);
+
+var vdSelect = document.getElementById('visitor-days');
+if (vdSelect) vdSelect.addEventListener('change', loadVisitorsPage);
+
+setInterval(function() {
+  var vp = document.getElementById("page-visitors");
+  if (vp && vp.classList.contains("active")) loadLiveActivity();
+}, 8000);
+
+async function loadLiveActivity() {
+  try {
+    const res = await fetch("/api/admin/active-users?minutes=5");
+    const data = await res.json();
+    const body = document.getElementById("live-activity-body");
+    const totalEl = document.getElementById("live-total");
+    const watchCount = document.getElementById("live-watching-count");
+    const browseCount = document.getElementById("live-browsing-count");
+    const adminCount = document.getElementById("live-admin-count");
+    if (!body) return;
+
+    // Count by type
+    let wc = 0, bc = 0, ac = 0;
+    (data.active_users || []).forEach(u => {
+      if (u.activity_type === "Watching") wc++;
+      else if (u.activity_type === "Browsing") bc++;
+      else if (u.activity_type === "Admin") ac++;
+    });
+    totalEl.textContent = data.total_active + " online";
+    watchCount.textContent = wc;
+    browseCount.textContent = bc;
+    adminCount.textContent = ac;
+
+    if (!data.active_users || data.active_users.length === 0) {
+      body.innerHTML = '<div style="padding:var(--space-lg);color:var(--text-muted);font-size:var(--fs-sm);text-align:center;">No active users right now</div>';
+      return;
+    }
+
+    let html = "";
+    data.active_users.forEach(u => {
+      const dotColor = u.activity_type === "Watching" ? "#22c55e" : u.activity_type === "Browsing" ? "#3b82f6" : u.activity_type === "Admin" ? "#f59e0b" : "#64748b";
+      const badgeBg = u.activity_type === "Watching" ? "rgba(34,197,94,0.15)" : u.activity_type === "Browsing" ? "rgba(59,130,246,0.15)" : u.activity_type === "Admin" ? "rgba(245,158,11,0.15)" : "rgba(100,116,139,0.15)";
+      const badgeFg = u.activity_type === "Watching" ? "#22c55e" : u.activity_type === "Browsing" ? "#3b82f6" : u.activity_type === "Admin" ? "#f59e0b" : "#94a3b8";
+      const ago = timeAgo(u.last_seen);
+      const detail = u.activity_type === "Watching" && u.current_drama ? u.current_drama : u.last_path;
+
+      // Device icon + label
+      let devIcon = "📱";
+      let devLabel = u.device || "Unknown";
+      if (u.device_type === "Desktop") devIcon = "💻";
+      else if (u.device_type === "Tablet") devIcon = "📱";
+      else if (u.device_type === "Bot") devIcon = "🤖";
+      
+      // Build device label: brand OS version · browser
+      let deviceParts = [];
+      if (u.device_brand && u.device_brand !== u.device_os) {
+        deviceParts.push(u.device_brand);
+      }
+      if (u.device_os) deviceParts.push(u.device_os);
+      if (u.device_os_version) deviceParts.push(u.device_os_version);
+      devLabel = deviceParts.length > 0 ? deviceParts.join(" ") : (u.device || "Unknown");
+      // Add browser
+      if (u.device && u.device !== "curl" && u.device !== "Python") {
+        devLabel += " · " + u.device;
+      }
+
+      // Activity detail
+      let detailHtml = "";
+      if (u.activity_type === "Watching" && u.current_drama) {
+        detailHtml = '<span style="color:#22c55e;">▶</span> ' + u.current_drama;
+      } else if (u.activity_type === "Browsing") {
+        detailHtml = '<span style="color:#3b82f6;">🔍</span> Browsing dramas';
+      } else if (u.activity_type === "Admin") {
+        detailHtml = '<span style="color:#f59e0b;">⚙️</span> Managing panel';
+      } else {
+        detailHtml = detail;
+      }
+
+      html += '<div class="live-user-row">'
+        + '<div style="width:8px;height:8px;border-radius:50%;background:' + dotColor + ';flex-shrink:0;"></div>'
+        + '<div class="live-ip">' + u.ip + '</div>'
+        + '<span class="live-badge" style="background:' + badgeBg + ';color:' + badgeFg + ';">' + u.activity_type + '</span>'
+        + '<div class="live-detail">' + detailHtml + '</div>'
+        + '<div class="live-device" title="' + (u.device_label || u.device) + '">' + devIcon + ' ' + devLabel + '</div>'
+        + '<div class="live-time">' + ago + '</div>'
+      + '</div>';
+    });
+    body.innerHTML = html;
+  } catch(e) { console.error("Live activity error:", e); }
+}
+
+/* ═══════════════ USER ACTIONS ═══════════════ */
+var _usersLoaded = false;
+async function loadUsersList() {
+  try {
+    var segment = document.getElementById('user-segment-filter');
+    var segmentVal = segment ? segment.value : 'all';
+    var endpoint = segmentVal === 'all' ? '/api/admin/users' : '/api/admin/users/segmented?segment=' + segmentVal;
+    const data = await api(endpoint);
+    var users = [];
+    if (data && data.users) users = data.users;
+    else if (Array.isArray(data)) users = data;
+    var tbody = document.querySelector('#users-table tbody');
+    var heading = document.getElementById('users-heading');
+    if (heading) {
+      var segLabels = { all: 'All Users', active_7d: 'Active 7 Days', inactive_30d: 'Inactive 30 Days', new_this_week: 'New This Week' };
+      heading.textContent = (segLabels[segmentVal] || 'All Users') + ' (' + users.length + ')';
+    }
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    if (users.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:20px;">No users found</td></tr>';
+      return;
+    }
+    users.forEach(function(u) {
+      var isBlocked = u.is_blocked || u.blocked;
+      var statusBadge = isBlocked
+        ? '<span class="status-badge pending" style="font-size:0.6rem;">Blocked</span>'
+        : '<span class="status-badge active" style="font-size:0.6rem;">Active</span>';
+      var initial = (u.name || u.username || '?').charAt(0).toUpperCase();
+      var colors = ['#f472b6,#ec4899','#60a5fa,#3b82f6','#a855f7,#7c3aed','#f97316,#ea580c','#22c55e,#16a34a'];
+      var color = colors[Math.abs(u.id || 0) % colors.length];
+      var blockBtn = isBlocked
+        ? '<button class="action-btn" onclick="unblockUser(\'' + u.id + '\')" title="Unblock" style="color:#22c55e;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></button>'
+        : '<button class="action-btn" onclick="blockUser(\'' + u.id + '\',\'' + (u.name || u.username || '').replace(/'/g, "\\'") + '\')" title="Block"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg></button>';
+      tbody.innerHTML += '<tr><td><div class="table-user"><div class="avatar" style="width:28px;height:28px;background:linear-gradient(135deg,' + color + ');font-size:0.6rem;">' + initial + '</div><span style="font-size:var(--fs-sm);">' + (u.name || u.username || '-') + '</span></div></td><td style="color:var(--text-muted);font-size:var(--fs-xs);">' + (u.created_at ? timeAgo(u.created_at) : '-') + '</td><td><strong>' + (u.watch_count || u.watches || 0) + '</strong></td><td style="color:var(--text-muted);font-size:var(--fs-xs);">' + (u.last_active ? timeAgo(u.last_active) : '-') + '</td><td>' + statusBadge + '</td><td><div style="display:flex;gap:4px;">' + blockBtn + '<button class="action-btn danger" onclick="deleteUser(\'' + u.id + '\',\'' + (u.name || u.username || '').replace(/'/g, "\\'") + '\')" title="Delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button><button class="action-btn" onclick="viewUserActivity(\'' + u.id + '\',\'' + (u.name || u.username || '').replace(/'/g, "\\'") + '\')" title="View Activity"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></button></div></td></tr>';
+    });
+    _usersLoaded = true;
+  } catch(e) { console.error('Load users error:', e); }
+}
+
+/* ═══════════════ SERVER STATUS ═══════════════ */
+var serverRefreshTimer = null;
+async function loadServerStatus() {
+  try {
+    const data = await api('/api/admin/server-status');
+    if (!data) return;
+    document.getElementById('srv-cpu').textContent = data.cpu_load != null ? data.cpu_load + '%' : '-';
+    document.getElementById('srv-memory').textContent = data.memory_used && data.memory_total ? data.memory_used + ' / ' + data.memory_total : (data.memory_percent != null ? data.memory_percent + '%' : '-');
+    document.getElementById('srv-disk').textContent = data.disk_used && data.disk_total ? data.disk_used + ' / ' + data.disk_total : (data.disk_percent != null ? data.disk_percent + '%' : '-');
+    document.getElementById('srv-uptime').textContent = data.uptime || '-';
+    var backendDot = document.getElementById('srv-backend-dot');
+    var backendStatus = document.getElementById('srv-backend-status');
+    if (data.backend_status === 'active' || data.backend_status === 'running' || data.backend_active) {
+      backendDot.style.background = '#22c55e';
+      backendStatus.textContent = 'Running';
+      backendStatus.style.color = '#22c55e';
+    } else {
+      backendDot.style.background = '#ef4444';
+      backendStatus.textContent = 'Offline';
+      backendStatus.style.color = '#ef4444';
+    }
+    document.getElementById('srv-db-size').textContent = data.db_size || '-';
+    document.getElementById('srv-db-type').textContent = data.db_type || 'SQLite';
+  } catch(e) { console.error('Server status error:', e); }
+}
+if (serverRefreshTimer) clearInterval(serverRefreshTimer);
+serverRefreshTimer = setInterval(function() {
+  var sp = document.getElementById('page-server');
+  if (sp && sp.classList.contains('active')) loadServerStatus();
+}, 10000);
+
+/* ═══════════════ DRAMA ANALYTICS ═══════════════ */
+async function loadDramaAnalytics() {
+  try {
+    const data = await api('/api/admin/drama-analytics');
+    if (!data) return;
+    var tbody = document.querySelector('#drama-analytics-table tbody');
+    if (tbody && data.dramas) {
+      tbody.innerHTML = '';
+      data.dramas.forEach(function(d, i) {
+        tbody.innerHTML += '<tr><td style="font-weight:700;color:' + (i < 3 ? '#f59e0b' : 'var(--text-muted)') + ';">' + (i + 1) + '</td><td><strong>' + (d.title || d.drama_title || '-') + '</strong></td><td><strong>' + (d.watches || d.total_watches || 0) + '</strong></td><td>' + (d.unique_viewers || 0) + '</td><td>' + (d.episodes_watched || 0) + '</td><td style="color:var(--text-muted);font-size:var(--fs-xs);">' + (d.first_watch ? formatDateTime(d.first_watch) : '-') + '</td><td style="color:var(--text-muted);font-size:var(--fs-xs);">' + (d.last_watch ? timeAgo(d.last_watch) : '-') + '</td></tr>';
+      });
+    }
+    if (data.daily_trend || data.chart) {
+      var chartData = data.daily_trend || data.chart;
+      var chart = document.getElementById('drama-trend-chart');
+      var labels = document.getElementById('drama-trend-labels');
+      if (chart && chartData.length > 0) {
+        var max = Math.max.apply(null, chartData.map(function(d) { return d.watches || d.count || 0; }));
+        chart.innerHTML = '';
+        labels.innerHTML = '';
+        chartData.forEach(function(d, i) {
+          var val = d.watches || d.count || 0;
+          var bar = document.createElement('div');
+          bar.className = 'mini-bar';
+          bar.style.height = (val / (max || 1) * 100) + '%';
+          bar.title = d.date + ': ' + val + ' watches';
+          chart.appendChild(bar);
+          var lbl = document.createElement('span');
+          lbl.textContent = (d.date || '').slice(5);
+          labels.appendChild(lbl);
+        });
+      }
+    }
+  } catch(e) { console.error('Drama analytics error:', e); }
+}
+
+/* ═══════════════ IP BANS ═══════════════ */
+async function loadIPBans() {
+  try {
+    const data = await api('/api/admin/ip-bans');
+    if (!data) return;
+    var bans = data.bans || data || [];
+    var tbody = document.querySelector('#ip-bans-table tbody');
+    if (tbody) {
+      tbody.innerHTML = '';
+      if (Array.isArray(bans) && bans.length > 0) {
+        bans.forEach(function(b) {
+          tbody.innerHTML += '<tr><td><code style="background:var(--bg-secondary);padding:2px 8px;border-radius:4px;font-size:var(--fs-xs);">' + (b.ip || b.ip_address) + '</code></td><td style="color:var(--text-secondary);font-size:var(--fs-sm);">' + (b.reason || '-') + '</td><td style="color:var(--text-muted);font-size:var(--fs-xs);">' + (b.created_at || b.banned_at ? timeAgo(b.created_at || b.banned_at) : '-') + '</td><td><button onclick="unbanIP(\'' + (b.ip || b.ip_address) + '\')" style="background:#22c55e;color:#fff;border:none;border-radius:4px;padding:4px 12px;font-size:var(--fs-xs);cursor:pointer;font-weight:600;">Unban</button></td></tr>';
+        });
+      } else {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:20px;">No banned IPs</td></tr>';
+      }
+    }
+  } catch(e) { console.error('IP bans error:', e); }
+}
+async function banIP() {
+  var ip = document.getElementById('ban-ip-input').value.trim();
+  var reason = document.getElementById('ban-reason-input').value.trim();
+  var msg = document.getElementById('ban-msg');
+  if (!ip) { msg.style.display = 'block'; msg.style.color = '#ef4444'; msg.textContent = 'Please enter an IP address.'; return; }
+  try {
+    var result = await api('/api/admin/ip-ban', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ip: ip, reason: reason}) });
+    if (result !== null && result !== undefined) {
+      msg.style.display = 'block'; msg.style.color = '#22c55e'; msg.textContent = 'IP ' + ip + ' has been banned.';
+      document.getElementById('ban-ip-input').value = '';
+      document.getElementById('ban-reason-input').value = '';
+      loadIPBans();
+    }
+  } catch(e) { msg.style.display = 'block'; msg.style.color = '#ef4444'; msg.textContent = 'Error banning IP: ' + e.message; }
+}
+async function unbanIP(ip) {
+  try {
+    await api('/api/admin/ip-ban/' + encodeURIComponent(ip), { method: 'DELETE' });
+    loadIPBans();
+  } catch(e) { console.error('Unban error:', e); }
+}
+
+/* ═══════════════ BROADCASTS ═══════════════ */
+async function loadBroadcasts() {
+  try {
+    const data = await api('/api/admin/broadcasts');
+    if (!data) return;
+    var broadcasts = data.broadcasts || data || [];
+    var tbody = document.querySelector('#broadcasts-table tbody');
+    if (tbody) {
+      tbody.innerHTML = '';
+      if (Array.isArray(broadcasts) && broadcasts.length > 0) {
+        broadcasts.forEach(function(b) {
+          var typeColor = b.type === 'warning' ? '#f59e0b' : b.type === 'success' ? '#22c55e' : '#3b82f6';
+          tbody.innerHTML += '<tr><td style="font-weight:600;">' + (b.title || '-') + '</td><td style="color:var(--text-secondary);font-size:var(--fs-sm);max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (b.message || '-') + '</td><td><span style="color:' + typeColor + ';font-weight:600;font-size:var(--fs-xs);">' + (b.type || 'info') + '</span></td><td style="color:var(--text-muted);font-size:var(--fs-xs);">' + (b.created_at ? timeAgo(b.created_at) : '-') + '</td></tr>';
+        });
+      } else {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:20px;">No broadcasts yet</td></tr>';
+      }
+    }
+  } catch(e) { console.error('Broadcasts error:', e); }
+}
+async function sendBroadcast() {
+  var title = document.getElementById('broadcast-title').value.trim();
+  var message = document.getElementById('broadcast-message').value.trim();
+  var type = document.getElementById('broadcast-type').value;
+  var msg = document.getElementById('broadcast-msg');
+  if (!title || !message) { msg.style.display = 'block'; msg.style.color = '#ef4444'; msg.textContent = 'Please fill in both title and message.'; return; }
+  try {
+    var result = await api('/api/admin/broadcast', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({title: title, message: message, type: type}) });
+    if (result !== null && result !== undefined) {
+      msg.style.display = 'block'; msg.style.color = '#22c55e'; msg.textContent = 'Broadcast sent successfully!';
+      document.getElementById('broadcast-title').value = '';
+      document.getElementById('broadcast-message').value = '';
+      loadBroadcasts();
+    }
+  } catch(e) { msg.style.display = 'block'; msg.style.color = '#ef4444'; msg.textContent = 'Error sending broadcast: ' + e.message; }
+}
+
+/* ═══════════════ SYSTEM LOGS ═══════════════ */
+async function loadSystemLogs() {
+  var service = document.getElementById('log-service').value;
+  var lines = document.getElementById('log-lines').value || 50;
+  var output = document.getElementById('system-logs-output');
+  output.textContent = 'Loading...';
+  try {
+    var data = await api('/api/admin/system-logs?lines=' + lines + '&service=' + service);
+    if (data && (data.logs || data.lines || typeof data === 'string')) {
+      output.textContent = data.logs || data.lines || data;
+    } else if (data && data.content) {
+      output.textContent = data.content;
+    } else {
+      output.textContent = 'No log data available.';
+    }
+  } catch(e) {
+    output.textContent = 'Error loading logs: ' + e.message;
+  }
+}
+
+/* ═══════════════ USER ACTIONS ═══════════════ */
+async function blockUser(userId, userName) {
+  var reason = prompt('Reason for blocking ' + userName + ':');
+  if (reason === null) return;
+  try {
+    await api('/api/admin/users/' + userId + '/block', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({reason: reason || 'Blocked by admin'}) });
+    loadUsersList();
+  } catch(e) { alert('Error blocking user: ' + e.message); }
+}
+async function unblockUser(userId) {
+  try {
+    await api('/api/admin/users/' + userId + '/unblock', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({}) });
+    loadUsersList();
+  } catch(e) { alert('Error unblocking user: ' + e.message); }
+}
+async function deleteUser(userId, userName) {
+  if (!confirm('Are you sure you want to delete user "' + userName + '"? This action cannot be undone.')) return;
+  try {
+    await api('/api/admin/users/' + userId, { method: 'DELETE' });
+    loadUsersList();
+  } catch(e) { alert('Error deleting user: ' + e.message); }
+}
+async function viewUserActivity(userId, userName) {
+  try {
+    var data = await api('/api/admin/users/' + userId + '/activity');
+    if (!data) return;
+    var activities = data.activities || data || [];
+    var html = '<div style="padding:20px;"><h3 style="margin-bottom:16px;">Activity: ' + userName + '</h3>';
+    if (Array.isArray(activities) && activities.length > 0) {
+      html += '<div style="max-height:400px;overflow-y:auto;">';
+      activities.forEach(function(a) {
+        var dotColor = a.type === 'watch' ? '#22c55e' : a.type === 'bookmark' ? '#f59e0b' : '#3b82f6';
+        html += '<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">';
+        html += '<div style="width:8px;height:8px;border-radius:50%;background:' + dotColor + ';margin-top:6px;flex-shrink:0;"></div>';
+        html += '<div><div style="font-size:var(--fs-sm);">' + (a.detail || a.description || a.action || '-') + '</div>';
+        html += '<div style="font-size:var(--fs-xs);color:var(--text-muted);">' + (a.created_at ? timeAgo(a.created_at) : a.time || '-') + '</div></div></div>';
+      });
+      html += '</div>';
+    } else {
+      html += '<p style="color:var(--text-muted);">No activity recorded.</p>';
+    }
+    html += '</div>';
+    var overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.7);z-index:1000;display:flex;align-items:center;justify-content:center;';
+    overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+    var modal = document.createElement('div');
+    modal.style.cssText = 'background:var(--bg-primary);border-radius:12px;max-width:600px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.5);';
+    modal.innerHTML = html + '<div style="text-align:right;padding:0 20px 16px;"><button onclick="this.closest(\'div[style*=fixed]\').remove()" style="background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-primary);padding:6px 16px;border-radius:6px;cursor:pointer;">Close</button></div>';
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+  } catch(e) { console.error('User activity error:', e); }
+}
+
+/* ═══════════════ CATALOG RE-SCRAPE ═══════════════ */
+async function rescrapeDrama(slug) {
+  if (!confirm('Re-scrape drama "' + slug + '"?')) return;
+  try {
+    await api('/api/admin/rescrape/' + encodeURIComponent(slug), { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({}) });
+    alert('Re-scrape initiated for ' + slug);
+  } catch(e) { alert('Error re-scraping: ' + e.message); }
+}
+
+/* ═══════════════ HERO EDIT ═══════════════ */
+async function loadHero() {
+  try {
+    const data = await api('/api/admin/hero');
+    if (!data) return;
+    var slug = document.getElementById('hero-drama-slug');
+    var img = document.getElementById('hero-image');
+    var title = document.getElementById('hero-title');
+    var syn = document.getElementById('hero-synopsis');
+    if (slug) slug.value = data.drama_slug || data.slug || '';
+    if (img) img.value = data.hero_image || data.image || '';
+    if (title) title.value = data.hero_title || data.title || '';
+    if (syn) syn.value = data.hero_synopsis || data.synopsis || '';
+  } catch(e) { console.error('Load hero error:', e); }
+}
+async function saveHero() {
+  var msg = document.getElementById('hero-msg');
+  var payload = {
+    drama_slug: document.getElementById('hero-drama-slug').value.trim(),
+    hero_image: document.getElementById('hero-image').value.trim(),
+    hero_title: document.getElementById('hero-title').value.trim(),
+    hero_synopsis: document.getElementById('hero-synopsis').value.trim()
+  };
+  try {
+    await api('/api/admin/hero', { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    msg.style.display = 'inline'; msg.style.color = '#22c55e'; msg.textContent = '✓ Saved';
+    setTimeout(function() { msg.style.display = 'none'; }, 3000);
+  } catch(e) {
+    msg.style.display = 'inline'; msg.style.color = '#ef4444'; msg.textContent = 'Error: ' + e.message;
+  }
+}
+
+/* ═══════════════ DRAMA EDIT MODAL ═══════════════ */
+function openDramaEditModal(slug, title, year, category, episodes, poster, synopsis) {
+  document.getElementById('edit-drama-slug').value = slug || '';
+  document.getElementById('edit-drama-title').value = title || '';
+  document.getElementById('edit-drama-year').value = year || '';
+  document.getElementById('edit-drama-category').value = category || '';
+  document.getElementById('edit-drama-episodes').value = episodes || '';
+  document.getElementById('edit-drama-poster').value = poster || '';
+  document.getElementById('edit-drama-synopsis').value = synopsis || '';
+  document.getElementById('drama-edit-msg').textContent = '';
+  document.getElementById('drama-edit-modal').style.display = 'flex';
+}
+function closeDramaEditModal() {
+  document.getElementById('drama-edit-modal').style.display = 'none';
+}
+async function saveDramaEdit() {
+  var slug = document.getElementById('edit-drama-slug').value;
+  var msg = document.getElementById('drama-edit-msg');
+  var payload = {
+    title: document.getElementById('edit-drama-title').value.trim(),
+    year: parseInt(document.getElementById('edit-drama-year').value) || null,
+    category: document.getElementById('edit-drama-category').value.trim(),
+    total_episodes: parseInt(document.getElementById('edit-drama-episodes').value) || null,
+    poster: document.getElementById('edit-drama-poster').value.trim(),
+    synopsis: document.getElementById('edit-drama-synopsis').value.trim()
+  };
+  try {
+    await api('/api/admin/catalog/' + encodeURIComponent(slug), { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    msg.style.color = '#22c55e'; msg.textContent = '✓ Saved successfully';
+    setTimeout(function() { closeDramaEditModal(); }, 1000);
+  } catch(e) {
+    msg.style.color = '#ef4444'; msg.textContent = 'Error: ' + e.message;
+  }
+}
+
+/* ═══════════════ MAINTENANCE MODE ═══════════════ */
+async function loadMaintenanceStatus() {
+  try {
+    const data = await api('/api/admin/maintenance');
+    var toggle = document.getElementById('maintenance-toggle');
+    if (toggle && data) {
+      toggle.checked = data.enabled || data.maintenance || false;
+    }
+  } catch(e) { console.error('Load maintenance error:', e); }
+}
+async function toggleMaintenance() {
+  var toggle = document.getElementById('maintenance-toggle');
+  var msg = document.getElementById('maintenance-msg');
+  try {
+    const result = await api('/api/admin/maintenance', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ enabled: toggle.checked }) });
+    msg.style.display = 'block'; msg.style.color = '#22c55e';
+    msg.textContent = toggle.checked ? '⚠ Maintenance mode ENABLED' : '✓ Maintenance mode disabled';
+    setTimeout(function() { msg.style.display = 'none'; }, 3000);
+  } catch(e) {
+    toggle.checked = !toggle.checked;
+    msg.style.display = 'block'; msg.style.color = '#ef4444'; msg.textContent = 'Error: ' + e.message;
+  }
+}
+
+/* ═══════════════ CACHE MANAGEMENT ═══════════════ */
+async function clearCache() {
+  var msg = document.getElementById('cache-msg');
+  try {
+    await api('/api/admin/cache/clear', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({}) });
+    msg.style.display = 'block'; msg.style.color = '#22c55e'; msg.textContent = '✓ Cache cleared successfully';
+    setTimeout(function() { msg.style.display = 'none'; }, 3000);
+  } catch(e) {
+    msg.style.display = 'block'; msg.style.color = '#ef4444'; msg.textContent = 'Error: ' + e.message;
+  }
+}
+
+/* ═══════════════ BACKUP MANAGEMENT ═══════════════ */
+async function loadBackups() {
+  try {
+    const data = await api('/api/admin/backup-status');
+    var list = document.getElementById('backups-list');
+    if (!list) return;
+    var backups = data.backups || data || [];
+    if (!Array.isArray(backups) || backups.length === 0) {
+      list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:var(--fs-sm);">No backups found</div>';
+      return;
+    }
+    var html = '';
+    backups.forEach(function(b) {
+      var name = b.filename || b.name || b.id || 'Backup';
+      var date = b.created_at || b.date || '';
+      var size = b.size || '';
+      html += '<div class="backup-item">';
+      html += '<div><div style="font-weight:600;font-size:var(--fs-sm);">' + name + '</div>';
+      html += '<div style="font-size:var(--fs-xs);color:var(--text-muted);">' + (date ? timeAgo(date) : '') + (size ? ' · ' + size : '') + '</div></div>';
+      html += '<button onclick="restoreBackup(\'' + encodeURIComponent(name) + '\')" style="background:#22c55e;color:#fff;border:none;border-radius:4px;padding:6px 14px;font-size:var(--fs-xs);cursor:pointer;font-weight:600;">Restore</button>';
+      html += '</div>';
+    });
+    list.innerHTML = html;
+  } catch(e) {
+    console.error('Load backups error:', e);
+    var list = document.getElementById('backups-list');
+    if (list) list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:var(--fs-sm);">Failed to load backups</div>';
+  }
+}
+async function createBackup() {
+  var msg = document.getElementById('backup-msg');
+  try {
+    msg.style.display = 'block'; msg.style.color = '#3b82f6'; msg.textContent = '⏳ Creating backup...';
+    await api('/api/admin/backup', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({}) });
+    msg.style.color = '#22c55e'; msg.textContent = '✓ Backup created successfully';
+    loadBackups();
+    setTimeout(function() { msg.style.display = 'none'; }, 3000);
+  } catch(e) {
+    msg.style.color = '#ef4444'; msg.textContent = 'Error: ' + e.message;
+  }
+}
+async function restoreBackup(name) {
+  if (!confirm('Restore from backup "' + decodeURIComponent(name) + '"? This may overwrite current data.')) return;
+  var msg = document.getElementById('backup-msg');
+  try {
+    msg.style.display = 'block'; msg.style.color = '#f59e0b'; msg.textContent = '⏳ Restoring backup...';
+    await api('/api/admin/backup/restore', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ filename: decodeURIComponent(name) }) });
+    msg.style.color = '#22c55e'; msg.textContent = '✓ Backup restored successfully';
+    setTimeout(function() { msg.style.display = 'none'; }, 3000);
+  } catch(e) {
+    msg.style.color = '#ef4444'; msg.textContent = 'Error: ' + e.message;
+  }
+}
+
+/* ═══════════════ REQUESTS APPROVE/REJECT ═══════════════ */
+async function loadRequests() {
+  try {
+    const data = await api('/api/admin/requests');
+    var requests = data.requests || data || [];
+    var tbody = document.getElementById('requests-tbody');
+    var badge = document.getElementById('requests-pending-badge');
+    if (!tbody) return;
+    if (!Array.isArray(requests) || requests.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:20px;">No requests found</td></tr>';
+      if (badge) badge.textContent = '0 Pending';
+      return;
+    }
+    var pendingCount = requests.filter(function(r) { return r.status === 'pending'; }).length;
+    if (badge) badge.textContent = pendingCount + ' Pending';
+    tbody.innerHTML = '';
+    requests.forEach(function(r) {
+      var statusColor = r.status === 'pending' ? 'pending' : r.status === 'approved' || r.status === 'added' ? 'added' : 'inactive';
+      var initial = (r.user_name || r.user || '?').charAt(0).toUpperCase();
+      var colors = ['#f472b6,#ec4899','#60a5fa,#3b82f6','#a855f7,#7c3aed','#f97316,#ea580c','#22c55e,#16a34a'];
+      var color = colors[Math.abs(r.id || 0) % colors.length];
+      var actions = '';
+      if (r.status === 'pending') {
+        actions = '<div style="display:flex;gap:4px;">'
+          + '<button class="action-btn" onclick="approveRequest(\'' + r.id + '\')" title="Approve" style="color:#22c55e;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></button>'
+          + '<button class="action-btn danger" onclick="rejectRequest(\'' + r.id + '\')" title="Reject"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>'
+          + '</div>';
+      } else {
+        actions = '<span style="font-size:var(--fs-xs);color:var(--text-muted);">Completed</span>';
+      }
+      tbody.innerHTML += '<tr><td><div class="table-user"><div class="avatar" style="width:28px;height:28px;background:linear-gradient(135deg,' + color + ');font-size:0.6rem;">' + initial + '</div><span style="font-size:var(--fs-sm);">' + (r.user_name || r.user || '-') + '</span></div></td><td><strong>' + (r.drama_title || r.title || '-') + '</strong></td><td style="color:var(--text-secondary);font-size:var(--fs-xs);">' + (r.notes || r.reason || '') + '</td><td style="color:var(--text-muted);font-size:var(--fs-xs);">' + (r.created_at ? timeAgo(r.created_at) : '-') + '</td><td><span class="status-badge ' + statusColor + '">' + (r.status || 'pending') + '</span></td><td>' + actions + '</td></tr>';
+    });
+  } catch(e) {
+    console.error('Load requests error:', e);
+  }
+}
+async function approveRequest(id) {
+  try {
+    await api('/api/admin/requests/' + id + '/approve', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({}) });
+    loadRequests();
+  } catch(e) { alert('Error approving request: ' + e.message); }
+}
+async function rejectRequest(id) {
+  if (!confirm('Reject this request?')) return;
+  try {
+    await api('/api/admin/requests/' + id + '/reject', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({}) });
+    loadRequests();
+  } catch(e) { alert('Error rejecting request: ' + e.message); }
+}
+
+/* ═══════════════ GROWTH METRICS ═══════════════ */
+async function loadGrowthMetrics() {
+  try {
+    const data = await api('/api/admin/growth');
+    if (!data) return;
+    document.getElementById('growth-total-users').textContent = data.total_users || 0;
+    document.getElementById('growth-active-7d').textContent = data.active_7d || 0;
+    document.getElementById('growth-active-30d').textContent = data.active_30d || 0;
+    document.getElementById('growth-retention-7d').textContent = (data.retention_7d != null ? data.retention_7d + '%' : '-');
+    // Chart
+    var dailyNew = data.daily_new_users || data.chart || [];
+    if (dailyNew.length > 0) {
+      var chart = document.getElementById('growth-chart');
+      var labels = document.getElementById('growth-chart-labels');
+      if (chart) {
+        var max = Math.max.apply(null, dailyNew.map(function(d) { return d.count || d.users || 0; }));
+        chart.innerHTML = '';
+        labels.innerHTML = '';
+        dailyNew.forEach(function(d) {
+          var val = d.count || d.users || 0;
+          var bar = document.createElement('div');
+          bar.className = 'mini-bar';
+          bar.style.height = (val / (max || 1) * 100) + '%';
+          bar.title = d.date + ': ' + val + ' new users';
+          chart.appendChild(bar);
+          var lbl = document.createElement('span');
+          lbl.textContent = (d.date || '').slice(5);
+          labels.appendChild(lbl);
+        });
+      }
+    }
+    // Retention
+    var retBody = document.getElementById('growth-retention-body');
+    if (retBody && data.retention) {
+      var ret = data.retention;
+      retBody.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;">'
+        + '<div style="background:var(--bg-secondary);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:var(--fs-xs);color:var(--text-muted);">Day 1 Retention</div><div style="font-size:1.3rem;font-weight:700;">' + (ret.day1 || '-') + '</div></div>'
+        + '<div style="background:var(--bg-secondary);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:var(--fs-xs);color:var(--text-muted);">Day 7 Retention</div><div style="font-size:1.3rem;font-weight:700;">' + (ret.day7 || '-') + '</div></div>'
+        + '<div style="background:var(--bg-secondary);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:var(--fs-xs);color:var(--text-muted);">Day 30 Retention</div><div style="font-size:1.3rem;font-weight:700;">' + (ret.day30 || '-') + '</div></div>'
+        + '</div>';
+    } else if (retBody && data.retention_rates) {
+      retBody.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;">'
+        + '<div style="background:var(--bg-secondary);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:var(--fs-xs);color:var(--text-muted);">Day 1</div><div style="font-size:1.3rem;font-weight:700;">' + (data.retention_rates.day1 || data.retention_rates['1d'] || '-') + '</div></div>'
+        + '<div style="background:var(--bg-secondary);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:var(--fs-xs);color:var(--text-muted);">Day 7</div><div style="font-size:1.3rem;font-weight:700;">' + (data.retention_rates.day7 || data.retention_rates['7d'] || '-') + '</div></div>'
+        + '<div style="background:var(--bg-secondary);padding:12px;border-radius:8px;text-align:center;"><div style="font-size:var(--fs-xs);color:var(--text-muted);">Day 30</div><div style="font-size:1.3rem;font-weight:700;">' + (data.retention_rates.day30 || data.retention_rates['30d'] || '-') + '</div></div>'
+        + '</div>';
+    }
+  } catch(e) { console.error('Growth metrics error:', e); }
+}
+
+/* ═══════════════ DEPLOY LOG ═══════════════ */
+async function loadDeployLog() {
+  var body = document.getElementById('deploy-log-body');
+  if (!body) return;
+  body.textContent = 'Loading...';
+  try {
+    const data = await api('/api/admin/deploy-log');
+    if (!data) { body.textContent = 'No deploy log available.'; return; }
+    var html = '';
+    if (data.last_restart) {
+      html += '<div class="deploy-log-entry"><strong>Last Restart:</strong> ' + (data.last_restart ? formatDateTime(data.last_restart) : 'N/A') + '</div>';
+    }
+    if (data.last_deploy) {
+      html += '<div class="deploy-log-entry"><strong>Last Deploy:</strong> ' + (data.last_deploy ? formatDateTime(data.last_deploy) : 'N/A') + '</div>';
+    }
+    if (data.commits && data.commits.length > 0) {
+      html += '<div style="margin-top:12px;font-weight:600;font-size:var(--fs-sm);">Recent Commits:</div>';
+      data.commits.forEach(function(c) {
+        html += '<div class="deploy-log-entry">';
+        html += '<span style="color:var(--accent);font-family:monospace;font-size:var(--fs-xs);">' + (c.hash || c.sha || '').slice(0, 7) + '</span> ';
+        html += '<span>' + (c.message || c.commit_message || '-') + '</span>';
+        html += '<div style="font-size:var(--fs-xs);color:var(--text-muted);">' + (c.author || c.author_name || '') + (c.date ? ' · ' + timeAgo(c.date) : '') + '</div>';
+        html += '</div>';
+      });
+    }
+    if (data.log && data.log.length > 0) {
+      html += '<div style="margin-top:12px;font-weight:600;font-size:var(--fs-sm);">Deploy Log:</div>';
+      data.log.forEach(function(entry) {
+        html += '<div class="deploy-log-entry"><span style="color:var(--text-muted);font-size:var(--fs-xs);">' + (entry.time ? formatDateTime(entry.time) : '') + '</span> ' + (entry.message || entry) + '</div>';
+      });
+    }
+    body.innerHTML = html || '<span style="color:var(--text-muted);">No deploy information available.</span>';
+  } catch(e) {
+    body.textContent = 'Error loading deploy log: ' + e.message;
+  }
+}
+
+/* ═══════════════ NOTIFICATION SETTINGS ═══════════════ */
+async function loadNotificationSettings() {
+  try {
+    const data = await api('/api/admin/notification-settings');
+    if (!data) return;
+    var tg = document.getElementById('notif-telegram-enabled');
+    var chatId = document.getElementById('notif-telegram-chat-id');
+    var newUser = document.getElementById('notif-new-user');
+    var dramaReq = document.getElementById('notif-drama-request');
+    var suspicious = document.getElementById('notif-suspicious');
+    var serverErr = document.getElementById('notif-server-error');
+    if (tg) tg.checked = data.telegram_enabled || data.telegramEnabled || false;
+    if (chatId) chatId.value = data.telegram_chat_id || data.telegramChatId || '';
+    if (newUser) newUser.checked = data.alert_new_user || data.alertNewUser || false;
+    if (dramaReq) dramaReq.checked = data.alert_drama_request || data.alertDramaRequest || false;
+    if (suspicious) suspicious.checked = data.alert_suspicious || data.alertSuspicious || false;
+    if (serverErr) serverErr.checked = data.alert_server_error || data.alertServerError || false;
+  } catch(e) { console.error('Load notification settings error:', e); }
+}
+async function saveNotificationSettings() {
+  var msg = document.getElementById('notif-msg');
+  var payload = {
+    telegram_enabled: document.getElementById('notif-telegram-enabled').checked,
+    telegram_chat_id: document.getElementById('notif-telegram-chat-id').value.trim(),
+    alert_new_user: document.getElementById('notif-new-user').checked,
+    alert_drama_request: document.getElementById('notif-drama-request').checked,
+    alert_suspicious: document.getElementById('notif-suspicious').checked,
+    alert_server_error: document.getElementById('notif-server-error').checked
+  };
+  try {
+    await api('/api/admin/notification-settings', { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    msg.style.display = 'block'; msg.style.color = '#22c55e'; msg.textContent = '✓ Notification settings saved';
+    setTimeout(function() { msg.style.display = 'none'; }, 3000);
+  } catch(e) {
+    msg.style.display = 'block'; msg.style.color = '#ef4444'; msg.textContent = 'Error: ' + e.message;
+  }
+}
+
+/* ═══════════════ EXPORT DATA ═══════════════ */
+async function exportCSV(type) {
+  try {
+    var url = type === 'users' ? '/api/admin/export/users' : '/api/admin/export/dramas';
+    var res = await fetch(url);
+    if (!res.ok) throw new Error('Export failed: ' + res.status);
+    var blob = await res.blob();
+    var a = document.createElement('a');
+    a.href = window.URL.createObjectURL(blob);
+    a.download = 'bluvia_' + type + '_' + new Date().toISOString().slice(0, 10) + '.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(a.href);
+  } catch(e) {
+    alert('Error exporting ' + type + ': ' + e.message);
+  }
+}
+
+
+
 </script>
 </body>
 </html>
-
