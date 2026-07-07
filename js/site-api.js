@@ -7,7 +7,7 @@
   if(document.getElementById('bluvia-link-css')) return;
   const s=document.createElement('style');
   s.id='bluvia-link-css';
-  s.textContent=`.poster-card{position:relative}.poster-card>a[href]{position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;text-decoration:none;color:inherit}`;
+  s.textContent=`.poster-card{text-decoration:none;color:inherit;position:relative}.poster-card>a[href]{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;text-decoration:none;color:inherit;pointer-events:auto}.poster-card>a[href] img{pointer-events:none}`;
   document.head.appendChild(s);
 })();
 
@@ -64,24 +64,30 @@ function getUrlParam(name) {
 
 // ── Drama Card Click Handler ──
 function makeDramaClickable(element, drama) {
-  element.style.cursor = 'pointer';
   const dramaId = drama.id || (drama.category && drama.slug ? drama.category + '/' + drama.slug : drama.slug || '');
-  element.dataset.dramaId = dramaId;
-  // Wrap inner HTML with <a> tag for right-click "Open in new tab"
-  const link = document.createElement('a');
-  link.href = dramaId ? `/drama/${dramaId}` : '#';
-  link.style.cssText = 'position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;color:inherit;text-decoration:none';
-  // Move all children into the link
-  while (element.firstChild) {
-    link.appendChild(element.firstChild);
+  const href = dramaId ? `/drama/${dramaId}` : '#';
+
+  // If already an <a>, just set href
+  if (element.tagName === 'A') {
+    element.href = href;
+    element.style.textDecoration = 'none';
+    element.style.color = 'inherit';
+    return;
   }
+
+  // For <div> cards: create <a> wrapper inside (covers full card area)
+  // This works both before AND after DOM append
+  const link = document.createElement('a');
+  link.href = href;
+  link.style.cssText = 'position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;text-decoration:none;color:inherit';
+  // Move all children into the link
+  while (element.firstChild) link.appendChild(element.firstChild);
   element.appendChild(link);
-  // Click handler on the element itself
+  element.style.position = 'relative';
+  // Click handler
   element.addEventListener('click', (e) => {
     e.preventDefault();
-    if (dramaId) {
-      window.location.href = `/drama/${dramaId}`;
-    }
+    if (dramaId) window.location.href = `/drama/${dramaId}`;
   });
 }
 
